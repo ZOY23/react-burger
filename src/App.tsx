@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { Button } from '@ya.praktikum/react-developer-burger-ui-components';
 
 function App() {
   return (
@@ -18,6 +19,9 @@ function App() {
         >
           Learn React
         </a>
+        <Button htmlType="button" type="primary" size="small" extraClass="ml-2">
+          Нажми на меня
+        </Button>
       </header>
     </div>
   );
