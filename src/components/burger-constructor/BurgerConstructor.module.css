@@ -1,0 +1,59 @@
+.constructor {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .constructorElements {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 24px;
+  }
+  
+  .bunTop, .bunBottom {
+    margin-left: 32px;
+  }
+  
+  .ingredientsList {
+    max-height: 464px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  
+  .ingredientItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .orderTotal {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 40px;
+    margin-top: 40px;
+  }
+  
+  .totalPrice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .ingredientsList::-webkit-scrollbar {
+    width: 8px;
+  }
+  .ingredientsList::-webkit-scrollbar-track {
+    background: #2F2F37;
+  }
+  .ingredientsList::-webkit-scrollbar-thumb {
+    background-color: #8585AD;
+    border-radius: 20px;
+  }

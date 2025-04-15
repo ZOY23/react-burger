@@ -1,0 +1,70 @@
+.section {
+  max-width: 600px;
+}
+
+.tabs {
+  display: flex;
+}
+
+.ingredientsContainer {
+  height: calc(100vh - 284px);
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Кастомный скроллбар */
+.ingredientsContainer::-webkit-scrollbar {
+  width: 8px;
+}
+.ingredientsContainer::-webkit-scrollbar-track {
+  background: #2F2F37;
+}
+.ingredientsContainer::-webkit-scrollbar-thumb {
+  background-color: #8585AD;
+  border-radius: 20px;
+}
+
+.ingredientsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px 24px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.counter {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.image {
+  width: 240px;
+  height: 120px;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+}
+
+.name {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .ingredientsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .image {
+    width: 100%;
+    height: auto;
+  }
+}
