@@ -113,7 +113,7 @@ const IngredientCard = ({ ingredient, count }) => {
   );
 };
 
-// Пропсы компонента
+// Пропсы  компонента
 BurgerIngredients.propTypes = {
   ingredients: PropTypes.arrayOf(
     PropTypes.shape({
