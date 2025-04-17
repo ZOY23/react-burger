@@ -5,24 +5,19 @@ import {
   CurrencyIcon,
   DragIcon
 } from '@ya.praktikum/react-developer-burger-ui-components';
-import styles from './BurgerConstructor.module.css';
 import PropTypes from 'prop-types';
+import styles from './BurgerConstructor.module.css';
+import { IngredientType } from '../../utils/types';
 
 export const BurgerConstructor = ({ ingredients }) => {
-  // Находим булку
   const bun = ingredients.find(item => item.type === 'bun');
-  
-  // Фильтруем остальные ингредиенты
   const otherIngredients = ingredients.filter(item => item.type !== 'bun');
-
-  // Вычисляем общую стоимость
   const totalPrice = (bun ? bun.price * 2 : 0) + 
     otherIngredients.reduce((sum, item) => sum + item.price, 0);
 
   return (
-    <section className={`${styles.constructor} mt-25`}>
+    <section className={styles.constructor}>
       <div className={styles.constructorElements}>
-        {/* Верхняя булка */}
         {bun && (
           <div className={styles.bunTop}>
             <ConstructorElement
@@ -35,7 +30,6 @@ export const BurgerConstructor = ({ ingredients }) => {
           </div>
         )}
 
-        {/* Основные ингредиенты */}
         <div className={styles.ingredientsList}>
           {otherIngredients.map((item, index) => (
             <div key={`${item._id}-${index}`} className={styles.ingredientItem}>
@@ -50,7 +44,6 @@ export const BurgerConstructor = ({ ingredients }) => {
           ))}
         </div>
 
-        {/* Нижняя булка */}
         {bun && (
           <div className={styles.bunBottom}>
             <ConstructorElement
@@ -64,16 +57,16 @@ export const BurgerConstructor = ({ ingredients }) => {
         )}
       </div>
 
-      {/* Итоговая сумма и кнопка */}
       <div className={styles.orderTotal}>
         <div className={styles.totalPrice}>
-          <span className="text text_type_digits-medium">{totalPrice}</span>
+          <span className={styles.priceText}>{totalPrice}</span>
           <CurrencyIcon type="primary" />
         </div>
         <Button 
           type="primary" 
           size="large"
           htmlType="button"
+          extraClass={styles.orderButton}
         >
           Оформить заказ
         </Button>
@@ -83,13 +76,5 @@ export const BurgerConstructor = ({ ingredients }) => {
 };
 
 BurgerConstructor.propTypes = {
-  ingredients: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      price: PropTypes.number.isRequired,
-      image: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  ingredients: PropTypes.arrayOf(IngredientType).isRequired,
 };
