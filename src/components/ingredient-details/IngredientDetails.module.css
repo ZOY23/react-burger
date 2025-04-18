@@ -1,0 +1,42 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+  }
+  
+  .title {
+    align-self: flex-start;
+    margin-bottom: 24px;
+  }
+  
+  .image {
+    width: 480px;
+    height: 240px;
+    object-fit: contain;
+  }
+  
+  .name {
+    text-align: center;
+  }
+  
+  .description {
+    text-align: center;
+    color: #8585AD;
+    margin-top: 16px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+
+  .nutrition {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    width: 100%;
+  }
+  
+  .nutritionItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
