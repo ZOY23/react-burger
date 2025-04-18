@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { Tab, Counter, CurrencyIcon } from '@ya.praktikum/react-developer-burger-ui-components';
 import PropTypes from 'prop-types';
 import styles from './BurgerIngredients.module.css';
+import { Modal } from '../modal/modal';
+import { IngredientDetails } from '../ingredient-details/ingredient-details';
+import { IngredientType } from '../../utils/types';
 
-const BurgerIngredients = ({ ingredients }) => {
+export const BurgerIngredients = ({ ingredients }) => {
   const [currentTab, setCurrentTab] = useState('bun');
+  const [selectedIngredient, setSelectedIngredient] = useState(null);
 
   const ingredientsByType = {
     bun: ingredients.filter(item => item.type === 'bun'),
@@ -17,11 +21,18 @@ const BurgerIngredients = ({ ingredients }) => {
     document.getElementById(tab).scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleIngredientClick = (ingredient) => {
+    setSelectedIngredient(ingredient);
+  };
+
+  const closeModal = () => {
+    setSelectedIngredient(null);
+  };
+
   return (
     <section className={styles.section}>
       <h1 className="text text_type_main-large mb-5">Соберите бургер</h1>
       
-      {/* Навигационные табы */}
       <div className={`${styles.tabs} mb-10`}>
         <Tab 
           value="bun" 
@@ -46,84 +57,44 @@ const BurgerIngredients = ({ ingredients }) => {
         </Tab>
       </div>
 
-      {/* Список ингредиентов с кастомным скроллом */}
       <div className={styles.ingredientsContainer}>
-        {/* Секция булок */}
-        <section id="bun">
-          <h2 className="text text_type_main-medium mb-6">Булки</h2>
-          <div className={styles.ingredientsGrid}>
-            {ingredientsByType.bun.map((item) => (
-              <IngredientCard 
-                key={item._id} 
-                ingredient={item} 
-                count={0}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Секция соусов */}
-        <section id="sauce">
-          <h2 className="text text_type_main-medium mb-6">Соусы</h2>
-          <div className={styles.ingredientsGrid}>
-            {ingredientsByType.sauce.map((item) => (
-              <IngredientCard 
-                key={item._id} 
-                ingredient={item} 
-                count={0}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Секция начинок */}
-        <section id="main">
-          <h2 className="text text_type_main-medium mb-6">Начинки</h2>
-          <div className={styles.ingredientsGrid}>
-            {ingredientsByType.main.map((item) => (
-              <IngredientCard 
-                key={item._id} 
-                ingredient={item} 
-                count={0}
-              />
-            ))}
-          </div>
-        </section>
+        {Object.entries(ingredientsByType).map(([type, items]) => (
+          <section key={type} id={type}>
+            <h2 className="text text_type_main-medium mb-6">
+              {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
+            </h2>
+            <div className={styles.ingredientsGrid}>
+              {items.map((item) => (
+                <div 
+                  key={item._id} 
+                  className={styles.card}
+                  onClick={() => handleIngredientClick(item)}
+                >
+                  {item.__v > 0 && (
+                    <Counter count={item.__v} size="default" />
+                  )}
+                  <img src={item.image} alt={item.name} className={styles.image} />
+                  <div className={`${styles.price} mt-1 mb-1`}>
+                    <span className="text text_type_digits-default mr-2">{item.price}</span>
+                    <CurrencyIcon type="primary" />
+                  </div>
+                  <p className={`text text_type_main-default ${styles.name}`}>{item.name}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
+
+      {selectedIngredient && (
+        <Modal title="Детали ингредиента" onClose={closeModal}>
+          <IngredientDetails ingredient={selectedIngredient} />
+        </Modal>
+      )}
     </section>
   );
 };
 
-// Компонент карточки ингредиента
-const IngredientCard = ({ ingredient, count }) => {
-  const { image, name, price } = ingredient;
-
-  return (
-    <div className={styles.card}>
-      {count > 0 && (
-        <Counter count={count} size="default" extraClass={styles.counter} />
-      )}
-      <img src={image} alt={name} className={styles.image} />
-      <div className={`${styles.price} mt-1 mb-1`}>
-        <span className="text text_type_digits-default mr-2">{price}</span>
-        <CurrencyIcon type="primary" />
-      </div>
-      <p className={`text text_type_main-default ${styles.name}`}>{name}</p>
-    </div>
-  );
-};
-
-// Пропсы  компонента
 BurgerIngredients.propTypes = {
-  ingredients: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      type: PropTypes.oneOf(['bun', 'sauce', 'main']).isRequired,
-      price: PropTypes.number.isRequired,
-      image: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  ingredients: PropTypes.arrayOf(IngredientType).isRequired,
 };
-
-export default BurgerIngredients;
