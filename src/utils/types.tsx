@@ -15,7 +15,6 @@ export const IngredientType = PropTypes.shape({
   __v: PropTypes.number.isRequired,
 });
 
-// Для TypeScript можно добавить интерфейс
 export interface IIngredient {
   _id: string;
   name: string;
