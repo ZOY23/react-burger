@@ -1,4 +1,3 @@
-import React, { MouseEvent } from 'react';
 import styles from './ModalOverlay.module.css';
 
 interface ModalOverlayProps {

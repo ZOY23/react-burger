@@ -5,6 +5,8 @@ import { BurgerConstructor } from './components/burger-constructor/';
 import { API_URL } from './utils/api';
 import styles from './App.module.css';
 
+
+
 function App() {
   const [ingredients, setIngredients] = useState<IIngredient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ function App() {
         
         setIngredients(data.data);
       } catch (err) {
-        // Правильная обработка ошибки TypeScript
+
         if (err instanceof Error) {
           setError(err.message);
         } else {

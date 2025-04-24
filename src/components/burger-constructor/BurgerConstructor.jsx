@@ -10,7 +10,6 @@ import { OrderDetails } from '../order-details/order-details';
 import { Modal } from '../modal/modal';
 import PropTypes from 'prop-types';
 import { IngredientType } from '../../utils/types';
-import { useDrag, useDrop } from 'react-dnd';
 
 export const BurgerConstructor = ({ ingredients }) => {
   const [selectedBun, setSelectedBun] = useState(null);
@@ -28,14 +27,7 @@ export const BurgerConstructor = ({ ingredients }) => {
     setIsOrderModalOpen(false);
   };
 
-  const addIngredient = (ingredient) => {
-    if (ingredient.type === 'bun') {
-      setSelectedBun(ingredient);
-    } else {
-      setSelectedIngredients([...selectedIngredients, ingredient]);
-    }
-  };
-
+  
   return (
     <>
       <section className={styles.constructor}>
