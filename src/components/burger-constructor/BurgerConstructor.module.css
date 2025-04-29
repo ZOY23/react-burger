@@ -69,3 +69,19 @@
   background-color: #8585AD;
   border-radius: 20px;
 }
+.constructorHover {
+  box-shadow: 0 0 10px rgba(76, 76, 255, 0.5);
+}
+
+.ingredientDragging {
+  opacity: 0.5;
+}
+
+.constructorHover {
+  box-shadow: 0 0 10px rgba(76, 76, 255, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.ingredientDragging {
+  opacity: 0.5;
+}

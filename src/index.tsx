@@ -4,17 +4,13 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
-import store from './services/store';
+import { store } from './services/store/store';
 
-
-// Получаем корневой элемент
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
-// Создаем корень приложения
 const root = ReactDOM.createRoot(rootElement);
 
-// Рендерим приложение
 root.render(
   <React.StrictMode>
     <Provider store={store}>
@@ -23,5 +19,4 @@ root.render(
   </React.StrictMode>
 );
 
-// Измерение производительности
 reportWebVitals();

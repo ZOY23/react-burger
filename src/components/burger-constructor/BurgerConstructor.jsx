@@ -1,73 +1,81 @@
-import React, { useState, useRef, useMemo } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
-import { ConstructorElement, Button, CurrencyIcon, DragIcon } from '@ya.praktikum/react-developer-burger-ui-components';
+import React from 'react';
+import { 
+  ConstructorElement, 
+  Button, 
+  CurrencyIcon,
+  DragIcon
+} from '@ya.praktikum/react-developer-burger-ui-components';
+import styles from './BurgerConstructor.module.css';
 import { OrderDetails } from '../order-details/order-details';
 import { Modal } from '../modal/modal';
-import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
+import { useDrop } from 'react-dnd';
+import { useAppDispatch, useAppSelector } from '../../services/store/store';
 import { 
-  incrementIngredientCount,
-  decrementIngredientCount,
-  resetIngredientsCount 
-} from '../../services/ingredients/actions';
-import {
-  addConstructorItem,
-  removeConstructorItem,
-  moveConstructorItem,
-  setConstructorBun,
-  resetConstructor
-} from '../../services/constructor/actions';
-import { createOrder } from '../../services/order/actions';
-import styles from './BurgerConstructor.module.css';
+  addBun, 
+  addIngredient, 
+  removeIngredient,
+  moveIngredient,
+  clearConstructor
+} from '../../services/slices/constructorSlice';
 
-const BurgerConstructor = () => {
+export const BurgerConstructor = () => {
   const dispatch = useAppDispatch();
   const { bun, ingredients } = useAppSelector(state => state.burgerConstructor);
-  const { orderNumber, orderRequest } = useAppSelector(state => state.order);
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = React.useState(false);
 
-  const totalPrice = useMemo(() => {
-    const ingredientsPrice = ingredients.reduce((sum, item) => sum + item.price, 0);
-    const bunPrice = bun ? bun.price * 2 : 0;
-    return ingredientsPrice + bunPrice;
-  }, [bun, ingredients]);
-
-  const [, dropTarget] = useDrop({
-    accept: 'ingredient',
-    drop(item) {
-      if (item.type === 'bun') {
-        dispatch(setConstructorBun(item));
-        dispatch(resetIngredientsCount());
-        dispatch(incrementIngredientCount(item._id));
-      } else {
-        const uniqueItem = { ...item, uuid: crypto.randomUUID() };
-        dispatch(addConstructorItem(uniqueItem));
-        dispatch(incrementIngredientCount(item._id));
+  const [{ isHover }, dropTarget] = useDrop({
+    accept: ['ingredient', 'constructorIngredient'],
+    drop(item: { ingredient: IIngredient; index?: number }) {
+      if (item.ingredient.type === 'bun') {
+        dispatch(addBun(item.ingredient));
+      } else if (item.index === undefined) {
+        dispatch(addIngredient(item.ingredient));
       }
     },
+    collect: monitor => ({
+      isHover: monitor.isOver(),
+    }),
   });
 
+  const totalPrice = (bun ? bun.price * 2 : 0) + 
+    ingredients.reduce((sum, item) => sum + item.price, 0);
+
   const handleOrderClick = () => {
-    const ingredientsIds = [
-      bun?._id,
-      ...ingredients.map(item => item._id),
-      bun?._id
-    ].filter(Boolean);
-    
-    dispatch(createOrder(ingredientsIds));
     setIsOrderModalOpen(true);
   };
 
   const closeModal = () => {
     setIsOrderModalOpen(false);
-    dispatch(resetConstructor());
-    dispatch(resetIngredientsCount());
+    dispatch(clearConstructor());
+  };
+
+  const moveCard = (dragIndex: number, hoverIndex: number) => {
+    dispatch(moveIngredient({ fromIndex: dragIndex, toIndex: hoverIndex }));
   };
 
   return (
-    <div ref={dropTarget} className={styles.constructor}>
-      {/* ... остальная часть компонента ... */}
-    </div>
+    <section 
+      className={`${styles.constructor} ${isHover ? styles.constructorHover : ''}`} 
+      ref={dropTarget}
+    >
+      {/* Остальной код компонента */}
+    </section>
   );
 };
 
-export default BurgerConstructor;
+// Добавляем интерфейс IIngredient в конце файла
+interface IIngredient {
+  _id: string;
+  name: string;
+  type: 'bun' | 'sauce' | 'main';
+  proteins: number;
+  fat: number;
+  carbohydrates: number;
+  calories: number;
+  price: number;
+  image: string;
+  image_mobile: string;
+  image_large: string;
+  __v: number;
+  uuid?: string;
+}

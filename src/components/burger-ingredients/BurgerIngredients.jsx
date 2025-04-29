@@ -1,24 +1,118 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Tab } from '@ya.praktikum/react-developer-burger-ui-components';
-import { CurrencyIcon } from '@ya.praktikum/react-developer-burger-ui-components';
-import { Counter } from '@ya.praktikum/react-developer-burger-ui-components';
-import { useDispatch, useSelector } from 'react-redux';
-import { useDrag } from 'react-dnd';
-import { IngredientType } from '../../utils/types';
+import React, { useState } from 'react';
+import { Tab, Counter, CurrencyIcon } from '@ya.praktikum/react-developer-burger-ui-components';
+import PropTypes from 'prop-types';
 import styles from './BurgerIngredients.module.css';
+import { Modal } from '../modal/modal';
+import { IngredientDetails } from '../ingredient-details/ingredient-details';
+import { useDrag } from 'react-dnd';
+import { useAppSelector } from '../../services/store/store';
+import { IngredientType } from '../../utils/types';
 
-const IngredientCard = ({ ingredient }) => {
+export const BurgerIngredients = () => {
+  const [currentTab, setCurrentTab] = useState('bun');
+  const [selectedIngredient, setSelectedIngredient] = useState(null);
+  const { items: ingredients } = useAppSelector(state => state.ingredients);
+  const { bun, ingredients: constructorIngredients } = useAppSelector(state => state.burgerConstructor);
+
+  const ingredientsByType = {
+    bun: ingredients.filter(item => item.type === 'bun'),
+    sauce: ingredients.filter(item => item.type === 'sauce'),
+    main: ingredients.filter(item => item.type === 'main')
+  };
+
+  const handleTabClick = (tab) => {
+    setCurrentTab(tab);
+    document.getElementById(tab).scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleIngredientClick = (ingredient) => {
+    setSelectedIngredient(ingredient);
+  };
+
+  const closeModal = () => {
+    setSelectedIngredient(null);
+  };
+
+  const getCount = (ingredient) => {
+    if (ingredient.type === 'bun') {
+      return bun && bun._id === ingredient._id ? 2 : 0;
+    }
+    return constructorIngredients.filter(item => item._id === ingredient._id).length;
+  };
+
+  return (
+    <section className={styles.section}>
+      <h1 className="text text_type_main-large mb-5">Соберите бургер</h1>
+      
+      <div className={`${styles.tabs} mb-10`}>
+        <Tab 
+          value="bun" 
+          active={currentTab === 'bun'}
+          onClick={() => handleTabClick('bun')}
+        >
+          Булки
+        </Tab>
+        <Tab 
+          value="sauce" 
+          active={currentTab === 'sauce'}
+          onClick={() => handleTabClick('sauce')}
+        >
+          Соусы
+        </Tab>
+        <Tab 
+          value="main" 
+          active={currentTab === 'main'}
+          onClick={() => handleTabClick('main')}
+        >
+          Начинки
+        </Tab>
+      </div>
+
+      <div className={styles.ingredientsContainer}>
+        {Object.entries(ingredientsByType).map(([type, items]) => (
+          <section key={type} id={type}>
+            <h2 className="text text_type_main-medium mb-6">
+              {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
+            </h2>
+            <div className={styles.ingredientsGrid}>
+              {items.map((item) => (
+                <IngredientCard 
+                  key={item._id} 
+                  ingredient={item}
+                  count={getCount(item)}
+                  onClick={handleIngredientClick}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {selectedIngredient && (
+        <Modal title="Детали ингредиента" onClose={closeModal}>
+          <IngredientDetails ingredient={selectedIngredient} />
+        </Modal>
+      )}
+    </section>
+  );
+};
+
+const IngredientCard = ({ ingredient, count, onClick }) => {
   const [, dragRef] = useDrag({
     type: 'ingredient',
-    item: { ...ingredient },
+    item: { ingredient },
   });
 
   return (
     <div 
       ref={dragRef}
       className={styles.card}
+      onClick={() => onClick(ingredient)}
+      data-testid={`ingredient-${ingredient._id}`}
     >
-      {ingredient.count > 0 && <Counter count={ingredient.count} size="default" />}
+      {count > 0 && (
+        <Counter count={count} size="default" />
+      )}
       <img src={ingredient.image} alt={ingredient.name} className={styles.image} />
       <div className={`${styles.price} mt-1 mb-1`}>
         <span className="text text_type_digits-default mr-2">{ingredient.price}</span>
@@ -29,68 +123,6 @@ const IngredientCard = ({ ingredient }) => {
   );
 };
 
-export const BurgerIngredients = () => {
-  const dispatch = useDispatch();
-  const { items, loading } = useSelector(state => state.ingredients);
-  const [currentTab, setCurrentTab] = useState('bun');
-  const containerRef = useRef(null);
-  const bunRef = useRef(null);
-  const sauceRef = useRef(null);
-  const mainRef = useRef(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    const handleScroll = () => {
-      const containerTop = container.getBoundingClientRect().top;
-      const bunDistance = Math.abs(bunRef.current.getBoundingClientRect().top - containerTop);
-      const sauceDistance = Math.abs(sauceRef.current.getBoundingClientRect().top - containerTop);
-      const mainDistance = Math.abs(mainRef.current.getBoundingClientRect().top - containerTop);
-
-      const minDistance = Math.min(bunDistance, sauceDistance, mainDistance);
-      
-      if (minDistance === bunDistance) setCurrentTab('bun');
-      else if (minDistance === sauceDistance) setCurrentTab('sauce');
-      else setCurrentTab('main');
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const ingredientsByType = {
-    bun: items.filter(item => item.type === 'bun'),
-    sauce: items.filter(item => item.type === 'sauce'),
-    main: items.filter(item => item.type === 'main'),
-  };
-
-  if (loading) {
-    return <p className="text text_type_main-default">Загрузка...</p>;
-  }
-
-  return (
-    <section className={styles.section}>
-      <h1 className="text text_type_main-large mb-5">Соберите бургер</h1>
-      
-      <div className={`${styles.tabs} mb-10`}>
-        <Tab value="bun" active={currentTab === 'bun'}>Булки</Tab>
-        <Tab value="sauce" active={currentTab === 'sauce'}>Соусы</Tab>
-        <Tab value="main" active={currentTab === 'main'}>Начинки</Tab>
-      </div>
-
-      <div className={styles.ingredientsContainer} ref={containerRef}>
-        {Object.entries(ingredientsByType).map(([type, items]) => (
-          <section key={type} id={type} ref={type === 'bun' ? bunRef : type === 'sauce' ? sauceRef : mainRef}>
-            <h2 className="text text_type_main-medium mb-6">
-              {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
-            </h2>
-            <div className={styles.ingredientsGrid}>
-              {items.map((item) => (
-                <IngredientCard key={item._id} ingredient={item} />
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-    </section>
-  );
+BurgerIngredients.propTypes = {
+  ingredients: PropTypes.arrayOf(IngredientType).isRequired,
 };
