@@ -7,4 +7,5 @@ export const rootReducer = combineReducers({
   burgerConstructor: constructorReducer,
 });
 
+export type RootState = ReturnType<typeof rootReducer>;
 export default rootReducer;

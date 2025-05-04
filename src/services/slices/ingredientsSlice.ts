@@ -5,12 +5,14 @@ interface IngredientsState {
   items: IIngredient[];
   loading: boolean;
   error: string | null;
+  currentIngredient: IIngredient | null;
 }
 
 const initialState: IngredientsState = {
   items: [],
   loading: false,
   error: null,
+  currentIngredient: null,
 };
 
 const ingredientsSlice = createSlice({
@@ -29,6 +31,12 @@ const ingredientsSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
+    setCurrentIngredient(state, action: PayloadAction<IIngredient>) {
+      state.currentIngredient = action.payload;
+    },
+    clearCurrentIngredient(state) {
+      state.currentIngredient = null;
+    },
   },
 });
 
@@ -36,6 +44,8 @@ export const {
   fetchIngredientsStart,
   fetchIngredientsSuccess,
   fetchIngredientsFailure,
+  setCurrentIngredient,
+  clearCurrentIngredient,
 } = ingredientsSlice.actions;
 
 export default ingredientsSlice.reducer;

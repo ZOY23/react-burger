@@ -1,5 +1,9 @@
-import { fetchIngredientsStart, fetchIngredientsSuccess, fetchIngredientsFailure } from '../slices/ingredientsSlice';
 import { AppDispatch } from '../store/store';
+import {
+  fetchIngredientsStart,
+  fetchIngredientsSuccess,
+  fetchIngredientsFailure,
+} from '../slices/ingredientsSlice';
 import { API_URL } from '../../utils/api';
 
 export const fetchIngredients = () => async (dispatch: AppDispatch) => {
