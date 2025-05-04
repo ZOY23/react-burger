@@ -49,11 +49,6 @@
   align-items: center;
 }
 
-.priceText {
-  composes: text text_type_digits-medium from global;
-  margin-right: 8px;
-}
-
 .orderButton {
   width: 215px;
 }

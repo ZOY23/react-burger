@@ -55,15 +55,72 @@ export const BurgerConstructor = () => {
 
   return (
     <section 
-      className={`${styles.constructor} ${isHover ? styles.constructorHover : ''}`} 
+      className={`${styles.constructor} ${isHover ? styles.constructorHover : ''} pt-25 pl-4`} 
       ref={dropTarget}
     >
-      {/* Остальной код компонента */}
+      {bun && (
+        <div className={`${styles.bun} ml-8`}>
+          <ConstructorElement
+            type="top"
+            isLocked={true}
+            text={`${bun.name} (верх)`}
+            price={bun.price}
+            thumbnail={bun.image}
+          />
+        </div>
+      )}
+      
+      <div className={`${styles.ingredients} custom-scroll`}>
+        {ingredients.map((ingredient, index) => (
+          <div key={ingredient.uuid} className={`${styles.ingredient} mb-4`}>
+            <DragIcon type="primary" />
+            <ConstructorElement
+              text={ingredient.name}
+              price={ingredient.price}
+              thumbnail={ingredient.image}
+              handleClose={() => dispatch(removeIngredient(index))}
+            />
+          </div>
+        ))}
+      </div>
+      
+      {bun && (
+        <div className={`${styles.bun} ml-8`}>
+          <ConstructorElement
+            type="bottom"
+            isLocked={true}
+            text={`${bun.name} (низ)`}
+            price={bun.price}
+            thumbnail={bun.image}
+          />
+        </div>
+      )}
+      
+      <div className={`${styles.total} mt-10`}>
+        <div className={`${styles.price} mr-10`}>
+          <span className="text text_type_digits-medium mr-2">{totalPrice}</span>
+          <CurrencyIcon type="primary" />
+        </div>
+        <Button 
+          htmlType="button" 
+          type="primary" 
+          size="large"
+          onClick={handleOrderClick}
+          disabled={!bun || ingredients.length === 0}
+        >
+          Оформить заказ
+        </Button>
+      </div>
+      
+      {isOrderModalOpen && (
+        <Modal onClose={closeModal}>
+          <OrderDetails />
+        </Modal>
+      )}
     </section>
   );
 };
 
-// Добавляем интерфейс IIngredient в конце файла
 interface IIngredient {
   _id: string;
   name: string;
