@@ -15,6 +15,14 @@ export interface IIngredient {
   uniqueId?: string;
 }
 
+export interface IOrderResponse {
+  name: string;
+  order: {
+    number: number;
+  };
+  success: boolean;
+}
+
 export interface IOrderDetails {
   orderNumber: number | null;
   loading: boolean;

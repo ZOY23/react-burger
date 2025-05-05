@@ -6,11 +6,9 @@ import {
 } from '../slices/ingredientsSlice';
 import { API_URL } from '../../utils/api';
 
-// Флаг для отслеживания выполнения запроса
 let isFetching = false;
 
 export const fetchIngredients = () => async (dispatch: AppDispatch) => {
-  // Если запрос уже выполняется, не делаем новый
   if (isFetching) return;
   
   try {

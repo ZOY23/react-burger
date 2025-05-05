@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { IIngredient } from '../../utils/types';
-import { API_URL } from '../../utils/api';
+import { IIngredient, IOrderResponse } from '../../utils/types';
+import { createOrderRequest } from '../../utils/api';
 
 interface ConstructorState {
   bun: IIngredient | null;
@@ -22,19 +22,7 @@ export const createOrder = createAsyncThunk(
   'burgerConstructor/createOrder',
   async (ingredientIds: string[], { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ingredients: ingredientIds }),
-      });
-      
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
-      const data = await response.json();
-      if (!data.success) throw new Error('API request was not successful');
-      
+      const data = await createOrderRequest(ingredientIds);
       return data.order.number;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -74,6 +62,11 @@ const constructorSlice = createSlice({
       state.bun = null;
       state.ingredients = [];
       state.orderNumber = null;
+      state.orderError = null;
+    },
+    resetOrderStatus(state) {
+      state.orderNumber = null;
+      state.orderError = null;
     },
   },
   extraReducers: (builder) => {
@@ -99,6 +92,7 @@ export const {
   removeIngredient,
   moveIngredient,
   clearConstructor,
+  resetOrderStatus,
 } = constructorSlice.actions;
 
 export const selectTotalPrice = (state: { burgerConstructor: ConstructorState }) => {

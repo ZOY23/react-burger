@@ -4,9 +4,33 @@ import styles from './OrderDetails.module.css';
 
 interface OrderDetailsProps {
   orderNumber: number;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
-export const OrderDetails: React.FC<OrderDetailsProps> = ({ orderNumber }) => {
+export const OrderDetails: React.FC<OrderDetailsProps> = ({ 
+  orderNumber, 
+  isLoading = false,
+  error = null
+}) => {
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <p className="text text_type_main-medium">Загрузка...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <p className={`text text_type_main-default ${styles.error}`}>
+          Ошибка: {error}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <p className={`text text_type_digits-large ${styles.orderNumber}`}>

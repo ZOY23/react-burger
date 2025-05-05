@@ -16,8 +16,9 @@ import {
   removeIngredient,
   moveIngredient,
   clearConstructor,
-  createOrder
+  resetOrderStatus
 } from '../../services/slices/constructorSlice';
+import { createOrder } from '../../services/slices/constructorSlice';
 import {
   selectConstructorBun,
   selectConstructorIngredients,
@@ -55,21 +56,25 @@ export const BurgerConstructor = () => {
   });
 
   const handleOrderClick = () => {
-    if (bun && ingredients.length > 0) {
-      const ingredientIds = [
-        bun._id,
-        ...ingredients.map(ing => ing._id),
-        bun._id
-      ];
-      dispatch(createOrder(ingredientIds))
-        .unwrap()
-        .then(() => {
-          setIsOrderModalOpen(true);
-        })
-        .catch(() => {
-          // Ошибка уже обрабатывается в slice
-        });
+    if (!bun) {
+      dispatch(resetOrderStatus());
+      return;
     }
+
+    const ingredientIds = [
+      bun._id,
+      ...ingredients.map(ing => ing._id),
+      bun._id
+    ];
+    
+    dispatch(createOrder(ingredientIds))
+      .unwrap()
+      .then(() => {
+        setIsOrderModalOpen(true);
+      })
+      .catch(() => {
+        // Ошибка уже обрабатывается в slice
+      });
   };
 
   const closeModal = () => {
@@ -78,6 +83,7 @@ export const BurgerConstructor = () => {
   };
 
   const moveCard = (dragIndex, hoverIndex) => {
+    if (dragIndex === hoverIndex) return;
     dispatch(moveIngredient({ fromIndex: dragIndex, toIndex: hoverIndex }));
   };
 
@@ -100,6 +106,12 @@ export const BurgerConstructor = () => {
       )}
       
       <div className={`${styles.ingredients} custom-scroll`}>
+        {ingredients.length === 0 && !bun && (
+          <div className={`${styles.emptyConstructor} text text_type_main-default`}>
+            Перетащите сюда ингредиенты
+          </div>
+        )}
+        
         {ingredients.map((ingredient, index) => (
           <ConstructorIngredient
             key={ingredient.uniqueId}
@@ -148,7 +160,11 @@ export const BurgerConstructor = () => {
       
       {isOrderModalOpen && orderNumber && (
         <Modal onClose={closeModal}>
-          <OrderDetails orderNumber={orderNumber} />
+          <OrderDetails 
+            orderNumber={orderNumber} 
+            isLoading={orderLoading}
+            error={orderError}
+          />
         </Modal>
       )}
     </section>
@@ -156,28 +172,51 @@ export const BurgerConstructor = () => {
 };
 
 const ConstructorIngredient = ({ ingredient, index, moveCard, onRemove }) => {
+  const ref = React.useRef(null);
+  
   const [{ isDragging }, drag] = useDrag({
     type: 'constructorIngredient',
-    item: { index },
+    item: () => ({ index }),
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
   });
 
-  const [, drop] = useDrop({
+  const [{ handlerId }, drop] = useDrop({
     accept: 'constructorIngredient',
-    hover(item) {
-      if (item.index !== index) {
-        moveCard(item.index, index);
-        item.index = index;
-      }
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item, monitor) {
+      if (!ref.current) return;
+      
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      
+      if (dragIndex === hoverIndex) return;
+      
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+      
+      moveCard(dragIndex, hoverIndex);
+      item.index = hoverIndex;
     },
   });
 
+  drag(drop(ref));
+
   return (
     <div 
-      ref={node => drag(drop(node))} 
+      ref={ref}
       className={`${styles.ingredient} mb-4 ${isDragging ? styles.ingredientDragging : ''}`}
+      data-handler-id={handlerId}
       data-testid={`constructor-ingredient-${ingredient._id}`}
     >
       <DragIcon type="primary" />
