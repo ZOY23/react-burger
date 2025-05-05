@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IIngredient } from '../../utils/types';
+import { API_URL } from '../../utils/api';
 
 interface ConstructorState {
   bun: IIngredient | null;
@@ -16,6 +17,31 @@ const initialState: ConstructorState = {
   orderLoading: false,
   orderError: null,
 };
+
+export const createOrder = createAsyncThunk(
+  'burgerConstructor/createOrder',
+  async (ingredientIds: string[], { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ingredients: ingredientIds }),
+      });
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      if (!data.success) throw new Error('API request was not successful');
+      
+      return data.order.number;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return rejectWithValue(message);
+    }
+  }
+);
 
 const constructorSlice = createSlice({
   name: 'burgerConstructor',
@@ -49,18 +75,21 @@ const constructorSlice = createSlice({
       state.ingredients = [];
       state.orderNumber = null;
     },
-    createOrderStart(state) {
-      state.orderLoading = true;
-      state.orderError = null;
-    },
-    createOrderSuccess(state, action: PayloadAction<number>) {
-      state.orderNumber = action.payload;
-      state.orderLoading = false;
-    },
-    createOrderFailure(state, action: PayloadAction<string>) {
-      state.orderError = action.payload;
-      state.orderLoading = false;
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(createOrder.pending, (state) => {
+        state.orderLoading = true;
+        state.orderError = null;
+      })
+      .addCase(createOrder.fulfilled, (state, action: PayloadAction<number>) => {
+        state.orderNumber = action.payload;
+        state.orderLoading = false;
+      })
+      .addCase(createOrder.rejected, (state, action) => {
+        state.orderError = action.payload as string;
+        state.orderLoading = false;
+      });
   },
 });
 
@@ -70,9 +99,6 @@ export const {
   removeIngredient,
   moveIngredient,
   clearConstructor,
-  createOrderStart,
-  createOrderSuccess,
-  createOrderFailure,
 } = constructorSlice.actions;
 
 export default constructorSlice.reducer;

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { 
   ConstructorElement, 
   Button, 
@@ -8,28 +9,44 @@ import {
 import styles from './BurgerConstructor.module.css';
 import { OrderDetails } from '../order-details/order-details';
 import { Modal } from '../modal/modal';
-import { useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../services/store/store';
 import { 
   addBun, 
   addIngredient, 
   removeIngredient,
   moveIngredient,
-  clearConstructor
+  clearConstructor,
+  createOrder
 } from '../../services/slices/constructorSlice';
+import {
+  selectConstructorBun,
+  selectConstructorIngredients,
+  selectTotalPrice,
+  selectOrderNumber,
+  selectOrderLoading,
+  selectOrderError
+} from '../../services/selectors/constructorSelectors';
 
 export const BurgerConstructor = () => {
   const dispatch = useAppDispatch();
-  const { bun, ingredients } = useAppSelector(state => state.burgerConstructor);
+  const bun = useAppSelector(selectConstructorBun);
+  const ingredients = useAppSelector(selectConstructorIngredients);
+  const totalPrice = useAppSelector(selectTotalPrice);
+  const orderNumber = useAppSelector(selectOrderNumber);
+  const orderLoading = useAppSelector(selectOrderLoading);
+  const orderError = useAppSelector(selectOrderError);
+  
   const [isOrderModalOpen, setIsOrderModalOpen] = React.useState(false);
 
   const [{ isHover }, dropTarget] = useDrop({
     accept: ['ingredient', 'constructorIngredient'],
-    drop(item: { ingredient: IIngredient; index?: number }) {
-      if (item.ingredient.type === 'bun') {
-        dispatch(addBun(item.ingredient));
-      } else if (item.index === undefined) {
-        dispatch(addIngredient(item.ingredient));
+    drop(item) {
+      if (item.ingredient) {
+        if (item.ingredient.type === 'bun') {
+          dispatch(addBun(item.ingredient));
+        } else {
+          dispatch(addIngredient(item.ingredient));
+        }
       }
     },
     collect: monitor => ({
@@ -37,11 +54,22 @@ export const BurgerConstructor = () => {
     }),
   });
 
-  const totalPrice = (bun ? bun.price * 2 : 0) + 
-    ingredients.reduce((sum, item) => sum + item.price, 0);
-
   const handleOrderClick = () => {
-    setIsOrderModalOpen(true);
+    if (bun && ingredients.length > 0) {
+      const ingredientIds = [
+        bun._id,
+        ...ingredients.map(ing => ing._id),
+        bun._id
+      ];
+      dispatch(createOrder(ingredientIds))
+        .unwrap()
+        .then(() => {
+          setIsOrderModalOpen(true);
+        })
+        .catch(() => {
+          // Ошибка уже обрабатывается в slice
+        });
+    }
   };
 
   const closeModal = () => {
@@ -49,7 +77,7 @@ export const BurgerConstructor = () => {
     dispatch(clearConstructor());
   };
 
-  const moveCard = (dragIndex: number, hoverIndex: number) => {
+  const moveCard = (dragIndex, hoverIndex) => {
     dispatch(moveIngredient({ fromIndex: dragIndex, toIndex: hoverIndex }));
   };
 
@@ -57,6 +85,7 @@ export const BurgerConstructor = () => {
     <section 
       className={`${styles.constructor} ${isHover ? styles.constructorHover : ''} pt-25 pl-4`} 
       ref={dropTarget}
+      data-testid="burger-constructor"
     >
       {bun && (
         <div className={`${styles.bun} ml-8`}>
@@ -72,15 +101,13 @@ export const BurgerConstructor = () => {
       
       <div className={`${styles.ingredients} custom-scroll`}>
         {ingredients.map((ingredient, index) => (
-          <div key={ingredient.uuid} className={`${styles.ingredient} mb-4`}>
-            <DragIcon type="primary" />
-            <ConstructorElement
-              text={ingredient.name}
-              price={ingredient.price}
-              thumbnail={ingredient.image}
-              handleClose={() => dispatch(removeIngredient(index))}
-            />
-          </div>
+          <ConstructorIngredient
+            key={ingredient.uniqueId}
+            ingredient={ingredient}
+            index={index}
+            moveCard={moveCard}
+            onRemove={() => dispatch(removeIngredient(ingredient.uniqueId))}
+          />
         ))}
       </div>
       
@@ -106,33 +133,57 @@ export const BurgerConstructor = () => {
           type="primary" 
           size="large"
           onClick={handleOrderClick}
-          disabled={!bun || ingredients.length === 0}
+          disabled={!bun || ingredients.length === 0 || orderLoading}
+          data-testid="order-button"
         >
-          Оформить заказ
+          {orderLoading ? 'Оформляем...' : 'Оформить заказ'}
         </Button>
       </div>
       
-      {isOrderModalOpen && (
+      {orderError && (
+        <p className={`text text_type_main-default ${styles.error}`}>
+          Ошибка при создании заказа: {orderError}
+        </p>
+      )}
+      
+      {isOrderModalOpen && orderNumber && (
         <Modal onClose={closeModal}>
-          <OrderDetails />
+          <OrderDetails orderNumber={orderNumber} />
         </Modal>
       )}
     </section>
   );
 };
 
-interface IIngredient {
-  _id: string;
-  name: string;
-  type: 'bun' | 'sauce' | 'main';
-  proteins: number;
-  fat: number;
-  carbohydrates: number;
-  calories: number;
-  price: number;
-  image: string;
-  image_mobile: string;
-  image_large: string;
-  __v: number;
-  uuid?: string;
+function ConstructorIngredient({ ingredient, index, moveCard, onRemove }) {
+  const [, drag] = useDrag({
+    type: 'constructorIngredient',
+    item: { index },
+  });
+
+  const [, drop] = useDrop({
+    accept: 'constructorIngredient',
+    hover(item) {
+      if (item.index !== index) {
+        moveCard(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return (
+    <div 
+      ref={(node) => drag(drop(node))} 
+      className={`${styles.ingredient} mb-4`}
+      data-testid={`constructor-ingredient-${ingredient._id}`}
+    >
+      <DragIcon type="primary" />
+      <ConstructorElement
+        text={ingredient.name}
+        price={ingredient.price}
+        thumbnail={ingredient.image}
+        handleClose={onRemove}
+      />
+    </div>
+  );
 }
