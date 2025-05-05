@@ -101,4 +101,11 @@ export const {
   clearConstructor,
 } = constructorSlice.actions;
 
+export const selectTotalPrice = (state: { burgerConstructor: ConstructorState }) => {
+  const { bun, ingredients } = state.burgerConstructor;
+  const bunPrice = bun ? bun.price * 2 : 0;
+  const ingredientsPrice = ingredients.reduce((sum, item) => sum + item.price, 0);
+  return bunPrice + ingredientsPrice;
+};
+
 export default constructorSlice.reducer;

@@ -1,5 +1,6 @@
 import { RootState } from '../store/store';
 
+import { selectTotalPrice as sliceSelectTotalPrice } from '../slices/constructorSlice';
 export const selectConstructorBun = (state: RootState) => state.burgerConstructor.bun;
 export const selectConstructorIngredients = (state: RootState) => state.burgerConstructor.ingredients;
 export const selectOrderNumber = (state: RootState) => state.burgerConstructor.orderNumber;
@@ -12,3 +13,4 @@ export const selectTotalPrice = (state: RootState) => {
   );
   return bunPrice + ingredientsPrice;
 };
+
