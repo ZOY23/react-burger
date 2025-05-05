@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Tab, Counter, CurrencyIcon } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './BurgerIngredients.module.css';
 import { Modal } from '../modal/modal';
@@ -21,7 +21,13 @@ import {
 export const BurgerIngredients = () => {
   const dispatch = useAppDispatch();
   const [currentTab, setCurrentTab] = useState('bun');
-  
+  const containerRef = useRef(null);
+  const sectionsRef = useRef({
+    bun: null,
+    sauce: null,
+    main: null
+  });
+
   const ingredients = useAppSelector(selectIngredients);
   const loading = useAppSelector(selectIngredientsLoading);
   const error = useAppSelector(selectIngredientsError);
@@ -30,11 +36,42 @@ export const BurgerIngredients = () => {
   const currentIngredient = useAppSelector(selectCurrentIngredient);
 
   useEffect(() => {
-    // Загружаем ингредиенты только если их нет и не идет уже загрузка
     if (ingredients.length === 0 && !loading) {
       dispatch(fetchIngredients());
     }
   }, [dispatch, ingredients.length, loading]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const containerTop = containerRect.top;
+
+      let closestSection = null;
+      let smallestDistance = Infinity;
+
+      Object.entries(sectionsRef.current).forEach(([type, section]) => {
+        if (section) {
+          const sectionRect = section.getBoundingClientRect();
+          const distance = Math.abs(sectionRect.top - containerTop);
+
+          if (distance < smallestDistance) {
+            smallestDistance = distance;
+            closestSection = type;
+          }
+        }
+      });
+
+      if (closestSection && closestSection !== currentTab) {
+        setCurrentTab(closestSection);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [currentTab]);
 
   const ingredientsByType = {
     bun: ingredients.filter(item => item.type === 'bun'),
@@ -44,7 +81,7 @@ export const BurgerIngredients = () => {
 
   const handleTabClick = (tab) => {
     setCurrentTab(tab);
-    document.getElementById(tab)?.scrollIntoView({ behavior: 'smooth' });
+    sectionsRef.current[tab]?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleIngredientClick = (ingredient) => {
@@ -86,9 +123,12 @@ export const BurgerIngredients = () => {
         </Tab>
       </div>
 
-      <div className={styles.ingredientsContainer}>
+      <div className={styles.ingredientsContainer} ref={containerRef}>
         {Object.entries(ingredientsByType).map(([type, items]) => (
-          <section key={type} id={type}>
+          <section 
+            key={type} 
+            ref={(el) => sectionsRef.current[type] = el}
+          >
             <h2 className="text text_type_main-medium mb-6">
               {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
             </h2>
