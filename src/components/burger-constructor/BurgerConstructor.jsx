@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { 
   ConstructorElement, 
@@ -155,10 +155,13 @@ export const BurgerConstructor = () => {
   );
 };
 
-function ConstructorIngredient({ ingredient, index, moveCard, onRemove }) {
-  const [, drag] = useDrag({
+const ConstructorIngredient = ({ ingredient, index, moveCard, onRemove }) => {
+  const [{ isDragging }, drag] = useDrag({
     type: 'constructorIngredient',
     item: { index },
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
   });
 
   const [, drop] = useDrop({
@@ -173,8 +176,8 @@ function ConstructorIngredient({ ingredient, index, moveCard, onRemove }) {
 
   return (
     <div 
-      ref={(node) => drag(drop(node))} 
-      className={`${styles.ingredient} mb-4`}
+      ref={node => drag(drop(node))} 
+      className={`${styles.ingredient} mb-4 ${isDragging ? styles.ingredientDragging : ''}`}
       data-testid={`constructor-ingredient-${ingredient._id}`}
     >
       <DragIcon type="primary" />
@@ -186,4 +189,4 @@ function ConstructorIngredient({ ingredient, index, moveCard, onRemove }) {
       />
     </div>
   );
-}
+};

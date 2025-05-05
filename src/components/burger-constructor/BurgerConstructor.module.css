@@ -5,21 +5,16 @@
   margin-top: 100px;
 }
 
-.constructorElements {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.constructorHover {
+  box-shadow: 0 0 10px rgba(76, 76, 255, 0.5);
+  transition: box-shadow 0.3s ease;
 }
 
-.bunTop {
+.bun {
   margin-left: 32px;
 }
 
-.bunBottom {
-  margin-left: 32px;
-}
-
-.ingredientsList {
+.ingredients {
   max-height: 464px;
   overflow-y: auto;
   display: flex;
@@ -30,13 +25,18 @@
   list-style: none;
 }
 
-.ingredientItem {
+.ingredient {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: move;
 }
 
-.orderTotal {
+.ingredientDragging {
+  opacity: 0.5;
+}
+
+.total {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -44,39 +44,23 @@
   margin-top: 40px;
 }
 
-.totalPrice {
+.price {
   display: flex;
   align-items: center;
 }
 
-.orderButton {
-  width: 215px;
+.error {
+  color: var(--colors-interface-error);
 }
 
 /* Кастомный скроллбар */
-.ingredientsList::-webkit-scrollbar {
+.ingredients::-webkit-scrollbar {
   width: 8px;
 }
-.ingredientsList::-webkit-scrollbar-track {
+.ingredients::-webkit-scrollbar-track {
   background: #2F2F37;
 }
-.ingredientsList::-webkit-scrollbar-thumb {
+.ingredients::-webkit-scrollbar-thumb {
   background-color: #8585AD;
   border-radius: 20px;
-}
-.constructorHover {
-  box-shadow: 0 0 10px rgba(76, 76, 255, 0.5);
-}
-
-.ingredientDragging {
-  opacity: 0.5;
-}
-
-.constructorHover {
-  box-shadow: 0 0 10px rgba(76, 76, 255, 0.5);
-  transition: box-shadow 0.3s ease;
-}
-
-.ingredientDragging {
-  opacity: 0.5;
 }
