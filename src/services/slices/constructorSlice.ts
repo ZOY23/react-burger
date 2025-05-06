@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IIngredient, IOrderResponse } from '../../utils/types';
 import { createOrderRequest } from '../../utils/api';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ConstructorState {
   bun: IIngredient | null;
@@ -9,6 +10,9 @@ interface ConstructorState {
   orderLoading: boolean;
   orderError: string | null;
 }
+
+// Добавляем новый тип для ингредиента с uniqueId
+type TIngredientWithUniqueId = IIngredient & { uniqueId: string };
 
 const initialState: ConstructorState = {
   bun: null,
@@ -38,12 +42,18 @@ const constructorSlice = createSlice({
     addBun(state, action: PayloadAction<IIngredient>) {
       state.bun = action.payload;
     },
-    addIngredient(state, action: PayloadAction<IIngredient>) {
-      const ingredientWithId = {
-        ...action.payload,
-        uniqueId: `${action.payload._id}-${Date.now()}`
-      };
-      state.ingredients.push(ingredientWithId);
+    addIngredient: {
+      reducer(state, action: PayloadAction<TIngredientWithUniqueId>) {
+        state.ingredients.push(action.payload);
+      },
+      prepare(ingredient: IIngredient) {
+        return {
+          payload: {
+            ...ingredient,
+            uniqueId: uuidv4() // Генерация UUID происходит здесь
+          }
+        };
+      }
     },
     removeIngredient(state, action: PayloadAction<string>) {
       state.ingredients = state.ingredients.filter(

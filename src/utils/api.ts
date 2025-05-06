@@ -1,7 +1,23 @@
 export const API_URL = 'https://norma.nomoreparties.space/api';
 
+function checkResponse(res: Response) {
+  if (!res.ok) {
+    return res.json().then(error => {
+      throw new Error(error.message || `HTTP error! status: ${res.status}`);
+    });
+  }
+  return res.json().then(data => {
+    if (!data.success) throw new Error('API request was not successful');
+    return data;
+  });
+}
+
+function request(endpoint: string, options: RequestInit) {
+  return fetch(`${API_URL}${endpoint}`, options).then(checkResponse);
+}
+
 export const createOrderRequest = async (ingredientIds: string[]) => {
-  const response = await fetch(`${API_URL}/orders`, {
+  return request('/orders', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -9,14 +25,4 @@ export const createOrderRequest = async (ingredientIds: string[]) => {
     },
     body: JSON.stringify({ ingredients: ingredientIds }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
-  }
-
-  const data = await response.json();
-  if (!data.success) throw new Error('API request was not successful');
-
-  return data;
 };
