@@ -148,3 +148,9 @@
 .cancelButton:hover {
   background: rgba(76, 76, 255, 0.1);
 }
+
+.error {
+  color: #e52b1a;
+  font-size: 14px;
+  margin-top: 4px;
+}

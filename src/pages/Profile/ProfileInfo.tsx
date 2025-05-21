@@ -1,4 +1,3 @@
-// pages/Profile/ProfileInfo.tsx
 import React, { useState, useEffect } from 'react';
 import styles from './Profile.module.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,13 +7,17 @@ import { AppDispatch, RootState } from '../../services/store/store';
 
 const ProfileInfo = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, initialUserData } = useSelector((state: RootState) => state.auth);
+  const { user, initialUserData, error } = useSelector((state: RootState) => state.auth);
   const [formData, setFormData] = useState({
     email: user?.email || '',
     name: user?.name || '',
     password: '',
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState({
+    email: '',
+    name: '',
+  });
 
   useEffect(() => {
     if (user) {
@@ -26,6 +29,30 @@ const ProfileInfo = () => {
     }
   }, [user]);
 
+  const validate = () => {
+    let valid = true;
+    const newErrors = {
+      email: '',
+      name: '',
+    };
+
+    if (!formData.email) {
+      newErrors.email = 'Email обязателен';
+      valid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email некорректен';
+      valid = false;
+    }
+
+    if (!formData.name) {
+      newErrors.name = 'Имя обязательно';
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -36,14 +63,16 @@ const ProfileInfo = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(updateUser(formData))
-      .unwrap()
-      .then(() => {
-        setIsEditing(false);
-      })
-      .catch(() => {
-        // Ошибка обрабатывается в slice
-      });
+    if (validate()) {
+      dispatch(updateUser(formData))
+        .unwrap()
+        .then(() => {
+          setIsEditing(false);
+        })
+        .catch(() => {
+          // Ошибка обрабатывается в slice
+        });
+    }
   };
 
   const handleCancel = () => {
@@ -54,19 +83,23 @@ const ProfileInfo = () => {
   return (
     <div className={styles.profileInfo}>
       <h1 className={styles.title}>Профиль</h1>
+      {error && <p className={styles.error}>{error}</p>}
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>
           <label htmlFor="name" className={styles.label}>Имя</label>
           {isEditing ? (
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={styles.input}
-              required
-            />
+            <>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={styles.input}
+                required
+              />
+              {errors.name && <span className={styles.error}>{errors.name}</span>}
+            </>
           ) : (
             <span className={styles.value}>{user?.name}</span>
           )}
@@ -74,15 +107,18 @@ const ProfileInfo = () => {
         <div className={styles.field}>
           <label htmlFor="email" className={styles.label}>Логин</label>
           {isEditing ? (
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={styles.input}
-              required
-            />
+            <>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={styles.input}
+                required
+              />
+              {errors.email && <span className={styles.error}>{errors.email}</span>}
+            </>
           ) : (
             <span className={styles.value}>{user?.email}</span>
           )}

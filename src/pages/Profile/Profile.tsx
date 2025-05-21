@@ -1,14 +1,16 @@
-// pages/Profile/Profile.tsx
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import styles from './Profile.module.css';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../services/actions/authActions';
 import { AppDispatch } from '../../services/store/store';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../services/store/store';
 
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
     dispatch(logoutUser())
@@ -20,6 +22,10 @@ const Profile = () => {
         // Ошибка обрабатывается в slice
       });
   };
+
+  if (!user) {
+    return null; // или загрузочный спиннер
+  }
 
   return (
     <div className={styles.container}>
