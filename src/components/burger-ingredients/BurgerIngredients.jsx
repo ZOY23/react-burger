@@ -4,7 +4,7 @@ import styles from './BurgerIngredients.module.css';
 import { Modal } from '../modal/modal';
 import { IngredientDetails } from '../ingredient-details/ingredient-details';
 import { useDrag } from 'react-dnd';
-import { useAppDispatch, useAppSelector } from '../../services/store/store';
+import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { fetchIngredients } from '../../services/actions/ingredientsActions';
 import { setCurrentIngredient, clearCurrentIngredient } from '../../services/slices/ingredientsSlice';
 import {

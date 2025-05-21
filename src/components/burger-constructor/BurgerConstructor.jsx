@@ -9,7 +9,7 @@ import {
 import styles from './BurgerConstructor.module.css';
 import { OrderDetails } from '../order-details/order-details';
 import { Modal } from '../modal/modal';
-import { useAppDispatch, useAppSelector } from '../../services/store/store';
+import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { 
   addBun, 
   addIngredient, 

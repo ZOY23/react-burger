@@ -1,14 +1,18 @@
 .container {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 40px 20px;
 }
 
-.ingredientsSection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
   margin-top: 40px;
+}
+
+@media (max-width: 1024px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
 }
