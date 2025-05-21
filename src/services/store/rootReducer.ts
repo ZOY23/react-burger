@@ -1,11 +1,13 @@
-import { combineReducers } from 'redux';
+import { combineReducers } from '@reduxjs/toolkit';
+import authReducer from '../slices/authSlice';
 import ingredientsReducer from '../slices/ingredientsSlice';
 import constructorReducer from '../slices/constructorSlice';
 
-export const rootReducer = combineReducers({
+const rootReducer = combineReducers({
+  auth: authReducer,
   ingredients: ingredientsReducer,
   burgerConstructor: constructorReducer,
 });
 
-export type RootState = ReturnType<typeof rootReducer>;
 export default rootReducer;
+export type RootState = ReturnType<typeof rootReducer>;

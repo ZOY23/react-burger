@@ -11,7 +11,6 @@ interface ConstructorState {
   orderError: string | null;
 }
 
-// Добавляем новый тип для ингредиента с uniqueId
 type TIngredientWithUniqueId = IIngredient & { uniqueId: string };
 
 const initialState: ConstructorState = {
@@ -50,7 +49,7 @@ const constructorSlice = createSlice({
         return {
           payload: {
             ...ingredient,
-            uniqueId: uuidv4() // Генерация UUID происходит здесь
+            uniqueId: uuidv4()
           }
         };
       }
