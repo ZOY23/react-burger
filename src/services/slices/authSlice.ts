@@ -3,11 +3,24 @@ import { setCookie, deleteCookie } from '../../utils/cookie';
 import {
   registerUser,
   loginUser,
-  logoutUser,
   refreshToken,
   getUser,
   updateUser,
 } from '../actions/authActions';
+
+// Добавляем logoutUser как createAsyncThunk
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Здесь должна быть ваша реализация выхода
+      // Например, вызов API для выхода
+      return {}; // Возвращаем пустой объект, так как при выходе данные не нужны
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 
 interface User {
   email: string;

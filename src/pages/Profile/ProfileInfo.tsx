@@ -1,169 +1,104 @@
-import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { IUser } from '../../utils/types';
+import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
+import { useState, ChangeEvent } from 'react';
 import styles from './Profile.module.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateUser } from '../../services/actions/authActions';
-import { resetUserData } from '../../services/slices/authSlice';
-import { AppDispatch, RootState } from '../../services/store/store';
 
-const ProfileInfo = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { user, initialUserData, error } = useSelector((state: RootState) => state.auth);
+export const ProfileInfo = () => {
+  const user = useOutletContext<IUser>();
   const [formData, setFormData] = useState({
-    email: user?.email || '',
     name: user?.name || '',
-    password: '',
+    email: user?.email || '',
+    password: '********'
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [errors, setErrors] = useState({
-    email: '',
-    name: '',
-  });
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        email: user.email,
-        name: user.name,
-        password: '',
-      });
-    }
-  }, [user]);
-
-  const validate = () => {
-    let valid = true;
-    const newErrors = {
-      email: '',
-      name: '',
-    };
-
-    if (!formData.email) {
-      newErrors.email = 'Email обязателен';
-      valid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email некорректен';
-      valid = false;
-    }
-
-    if (!formData.name) {
-      newErrors.name = 'Имя обязательно';
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      dispatch(updateUser(formData))
-        .unwrap()
-        .then(() => {
-          setIsEditing(false);
-        })
-        .catch(() => {
-          // Ошибка обрабатывается в slice
-        });
-    }
+    setIsEditing(false);
   };
 
   const handleCancel = () => {
-    dispatch(resetUserData());
+    setFormData({
+      name: user?.name || '',
+      email: user?.email || '',
+      password: '********'
+    });
     setIsEditing(false);
   };
 
   return (
-    <div className={styles.profileInfo}>
-      <h1 className={styles.title}>Профиль</h1>
-      {error && <p className={styles.error}>{error}</p>}
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.field}>
-          <label htmlFor="name" className={styles.label}>Имя</label>
-          {isEditing ? (
-            <>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={styles.input}
-                required
-              />
-              {errors.name && <span className={styles.error}>{errors.name}</span>}
-            </>
-          ) : (
-            <span className={styles.value}>{user?.name}</span>
-          )}
-        </div>
-        <div className={styles.field}>
-          <label htmlFor="email" className={styles.label}>Логин</label>
-          {isEditing ? (
-            <>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={styles.input}
-                required
-              />
-              {errors.email && <span className={styles.error}>{errors.email}</span>}
-            </>
-          ) : (
-            <span className={styles.value}>{user?.email}</span>
-          )}
-        </div>
-        {isEditing && (
-          <div className={styles.field}>
-            <label htmlFor="password" className={styles.label}>Пароль</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={styles.input}
-              placeholder="Введите новый пароль"
-            />
-          </div>
-        )}
+    <form onSubmit={handleSubmit} className={styles.profileForm}>
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder="Имя"
+          onChange={handleChange}
+          value={formData.name}
+          name="name"
+          icon={isEditing ? 'CloseIcon' : 'EditIcon'}
+          onIconClick={() => setIsEditing(!isEditing)}
+          disabled={!isEditing}
+          onPointerEnterCapture={undefined}
+          onPointerLeaveCapture={undefined}
+        />
+      </div>
+      <div className="mb-6">
+        <Input
+          type="email"
+          placeholder="Логин"
+          onChange={handleChange}
+          value={formData.email}
+          name="email"
+          icon={isEditing ? 'CloseIcon' : 'EditIcon'}
+          onIconClick={() => setIsEditing(!isEditing)}
+          disabled={!isEditing}
+          onPointerEnterCapture={undefined}
+          onPointerLeaveCapture={undefined}
+        />
+      </div>
+      <div className="mb-6">
+        <Input
+          type="password"
+          placeholder="Пароль"
+          onChange={handleChange}
+          value={formData.password}
+          name="password"
+          icon={isEditing ? 'CloseIcon' : 'EditIcon'}
+          onIconClick={() => setIsEditing(!isEditing)}
+          disabled={!isEditing}
+          onPointerEnterCapture={undefined}
+          onPointerLeaveCapture={undefined}
+        />
+      </div>
+
+      {isEditing && (
         <div className={styles.buttons}>
-          {isEditing ? (
-            <>
-              <button type="submit" className={styles.saveButton}>
-                Сохранить
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className={styles.cancelButton}
-              >
-                Отмена
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className={styles.editButton}
-            >
-              Редактировать
-            </button>
-          )}
+          <Button 
+            type="secondary" 
+            size="medium" 
+            onClick={handleCancel}
+            htmlType="button"
+          >
+            Отмена
+          </Button>
+          <Button 
+            type="primary" 
+            size="medium"
+            htmlType="submit"
+          >
+            Сохранить
+          </Button>
         </div>
-      </form>
-    </div>
+      )}
+    </form>
   );
 };
-
-export default ProfileInfo;

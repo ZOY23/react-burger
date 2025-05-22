@@ -6,13 +6,14 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import Profile from './pages/Profile';
-import ProfileInfo from './pages/Profile/ProfileInfo';
+import { Profile } from './pages/Profile';
+import { ProfileInfo } from './pages/Profile/ProfileInfo';
 import ProtectedRouteElement from './components/ProtectedRouteElement/ProtectedRouteElement';
 import Home from './pages/Home';
 import IngredientDetails from './pages/IngredientDetails';
 import NotFound from './pages/NotFound';
 import { Modal } from './components/modal/modal';
+import { OrdersHistory } from './pages/Profile/OrdersHistory';
 
 function App() {
   const location = useLocation();
@@ -41,6 +42,7 @@ function App() {
             <ProtectedRouteElement element={<Profile />} />
           }>
             <Route index element={<ProfileInfo />} />
+            <Route path="orders" element={<OrdersHistory />} />
           </Route>
           <Route path="/ingredients/:id" element={<IngredientDetails />} />
           <Route path="*" element={<NotFound />} />

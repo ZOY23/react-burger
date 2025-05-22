@@ -1,8 +1,16 @@
 // src/components/ProtectedRouteElement/ProtectedRouteElement.tsx
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store/store';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAppSelector } from '../../services/store/hooks';
+
+export const ProtectedRoute = ({ element }: { element: React.ReactElement }) => {
+  const location = useLocation();
+  const { isAuth } = useAppSelector((state) => state.auth);
+
+  return isAuth ? element : <Navigate to="/login" state={{ from: location }} replace />;
+};
 
 interface ProtectedRouteElementProps {
   element: React.ReactElement;
