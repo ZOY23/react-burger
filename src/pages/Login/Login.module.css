@@ -1,39 +1,49 @@
-.error {
-  color: #ff0000;
-  margin-top: 10px;
-  text-align: center;
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 480px;
+  margin: 180px auto 0;
 }
 
-.container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px;
+.title {
+  margin: 0 0 24px;
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 700;
 }
 
 .form {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 24px;
+  width: 100%;
 }
 
-input {
-  padding: 10px;
-}
-
-button {
-  padding: 10px;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.inputWrapper {
+  width: 100%;
 }
 
 .links {
-  margin-top: 20px;
+  margin-top: 80px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 16px;
+}
+
+.linkText {
+  color: var(--colors-interface-secondary);
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.error {
+  color: var(--colors-interface-error);
+  margin-top: 10px;
   text-align: center;
+  font-size: 14px;
+  line-height: 1.4;
 }

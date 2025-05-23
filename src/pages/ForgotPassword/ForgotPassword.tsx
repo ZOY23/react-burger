@@ -1,11 +1,12 @@
-// src/pages/ForgotPassword/ForgotPassword.tsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './ForgotPassword.module.css';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,32 +22,57 @@ const ForgotPassword = () => {
       const data = await response.json();
       if (data.success) {
         setMessage('Инструкции отправлены на email');
+        setError('');
         localStorage.setItem('fromForgotPassword', 'true');
         navigate('/reset-password');
       } else {
-        setMessage('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+        setError(data.message || 'Неизвестная ошибка');
+        setMessage('');
       }
     } catch (error) {
-      setMessage('Ошибка сети');
+      setError('Ошибка сети');
+      setMessage('');
     }
   };
 
   return (
     <div className={styles.container}>
-      <h1>Восстановление пароля</h1>
+      <h1 className={`${styles.title} text text_type_main-medium`}>Восстановление пароля</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input
+        <Input
           type="email"
           placeholder="Укажите e-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
+          name="email"
+          error={!!error}
+          errorText={error}
+          size="default"
+          extraClass="mb-6"
+          onPointerEnterCapture={() => {}}
+          onPointerLeaveCapture={() => {}}
         />
-        {message && <p className={styles.message}>{message}</p>}
-        <button type="submit">Восстановить</button>
+        {message && (
+          <p className={`${styles.message} text text_type_main-default`}>
+            {message}
+          </p>
+        )}
+        <Button
+          htmlType="submit"
+          type="primary"
+          size="medium"
+          extraClass="mb-20"
+        >
+          Восстановить
+        </Button>
       </form>
       <div className={styles.links}>
-        <p>Вспомнили пароль? <Link to="/login">Войти</Link></p>
+        <p className={`${styles.text} text text_type_main-default`}>
+          Вспомнили пароль?{' '}
+          <Link to="/login" className={styles.link}>
+            Войти
+          </Link>
+        </p>
       </div>
     </div>
   );

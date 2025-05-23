@@ -31,3 +31,21 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.text {
+  font-family: 'Jet Brains Mono', sans-serif;
+  font-style: normal;
+  margin: 0;
+}
+
+.text_type_main-medium {
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.text_type_main-default {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+}
