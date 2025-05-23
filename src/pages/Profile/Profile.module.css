@@ -1,0 +1,87 @@
+.profileContainer {
+  display: flex;
+  max-width: 1280px;
+  margin: 120px auto 0;
+  gap: 60px;
+}
+
+.sidebar {
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.link {
+  text-decoration: none;
+  color: #8585AD;
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.link:hover {
+  color: #F2F2F3;
+}
+
+.active {
+  color: #F2F2F3;
+}
+
+.logoutButton {
+  color: #8585AD;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.logoutButton:hover {
+  color: #F2F2F3;
+}
+
+.note {
+  margin-top: 80px;
+  opacity: 0.4;
+}
+
+.content {
+  flex-grow: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .profileContainer {
+    flex-direction: column;
+    margin-top: 80px;
+    gap: 30px;
+    padding: 0 20px;
+  }
+  
+  .sidebar {
+    max-width: 100%;
+  }
+  
+  .note {
+    margin-top: 40px;
+  }
+}
+.profileForm {
+  max-width: 480px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 20px;
+}
