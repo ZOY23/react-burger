@@ -1,19 +1,31 @@
 import React, { ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './Login.module.css';
+import { useAppDispatch } from '../../services/store/hooks';
+import { loginUser } from '../../services/actions/authActions';
 
 const Login = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
-  const handleSubmit = (e: React.FormEvent) => {
+   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Обработка входа
-    console.log({ email, password });
+    dispatch(loginUser({ email, password }))
+      .unwrap()
+      .then(() => {
+        // Всегда перенаправляем на главную после логина
+        navigate('/', { replace: true }); 
+      })
+      .catch(() => {
+        // Ошибка обрабатывается в slice
+      });
   };
 
-  // Общие пропсы для всех Input
   const inputProps = {
     onPointerEnterCapture: () => {},
     onPointerLeaveCapture: () => {},

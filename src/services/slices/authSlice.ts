@@ -8,14 +8,11 @@ import {
   updateUser,
 } from '../actions/authActions';
 
-// Добавляем logoutUser как createAsyncThunk
 export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
     try {
-      // Здесь должна быть ваша реализация выхода
-      // Например, вызов API для выхода
-      return {}; // Возвращаем пустой объект, так как при выходе данные не нужны
+      return {};
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -152,4 +149,5 @@ export const authSlice = createSlice({
 });
 
 export const { clearError, resetUserData } = authSlice.actions;
+export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuth;
 export default authSlice.reducer;
