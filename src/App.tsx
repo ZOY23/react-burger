@@ -1,4 +1,5 @@
-import React from 'react';
+// App.tsx
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AppHeader } from './components/app-header/';
 import styles from './App.module.css';
@@ -14,11 +15,34 @@ import IngredientDetails from './pages/IngredientDetails';
 import NotFound from './pages/NotFound';
 import { Modal } from './components/modal/modal';
 import { OrdersHistory } from './pages/Profile/OrdersHistory';
+import { useAppDispatch, useAppSelector } from './services/store/hooks';
+import { IngredientDetails as IngredientDetailsComponent } from './components/ingredient-details/ingredient-details';
+import { forceLogout } from './services/slices/authSlice';
 
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const background = location.state?.background;
+  const currentIngredient = useAppSelector(state => state.ingredients.currentIngredient);
+
+  useEffect(() => {
+    const handleUnauthorized = (event: CustomEvent) => {
+      if (event.detail?.message === 'jwt expired' || event.detail?.message === 'No tokens available') {
+        dispatch(forceLogout());
+        navigate('/login', { state: { from: location } });
+      }
+    };
+
+    window.addEventListener('unauthorized', handleUnauthorized as EventListener);
+    return () => {
+      window.removeEventListener('unauthorized', handleUnauthorized as EventListener);
+    };
+  }, [dispatch, navigate, location]);
+
+  const handleModalClose = () => {
+    navigate(-1);
+  };
 
   return (
     <div className="App">
@@ -53,8 +77,8 @@ function App() {
             <Route
               path="/ingredients/:id"
               element={
-                <Modal onClose={() => navigate(-1)}>
-                  <IngredientDetails />
+                <Modal title="Детали ингредиента" onClose={handleModalClose}>
+                  {currentIngredient && <IngredientDetailsComponent ingredient={currentIngredient} />}
                 </Modal>
               }
             />

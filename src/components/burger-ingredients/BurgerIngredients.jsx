@@ -1,12 +1,12 @@
+// BurgerIngredients.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { Tab, Counter, CurrencyIcon } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './BurgerIngredients.module.css';
-import { Modal } from '../modal/modal';
-import { IngredientDetails } from '../ingredient-details/ingredient-details';
 import { useDrag } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { fetchIngredients } from '../../services/actions/ingredientsActions';
-import { setCurrentIngredient, clearCurrentIngredient } from '../../services/slices/ingredientsSlice';
+import { setCurrentIngredient } from '../../services/slices/ingredientsSlice';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   selectIngredients,
   selectCurrentIngredient,
@@ -20,6 +20,8 @@ import {
 
 export const BurgerIngredients = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentTab, setCurrentTab] = useState('bun');
   const containerRef = useRef(null);
   const sectionsRef = useRef({
@@ -33,7 +35,6 @@ export const BurgerIngredients = () => {
   const error = useAppSelector(selectIngredientsError);
   const bun = useAppSelector(selectConstructorBun);
   const constructorIngredients = useAppSelector(selectConstructorIngredients);
-  const currentIngredient = useAppSelector(selectCurrentIngredient);
 
   useEffect(() => {
     if (ingredients.length === 0 && !loading) {
@@ -86,10 +87,7 @@ export const BurgerIngredients = () => {
 
   const handleIngredientClick = (ingredient) => {
     dispatch(setCurrentIngredient(ingredient));
-  };
-
-  const closeModal = () => {
-    dispatch(clearCurrentIngredient());
+    navigate(`/ingredients/${ingredient._id}`, { state: { background: location } });
   };
 
   const getCount = (ingredient) => {
@@ -145,12 +143,6 @@ export const BurgerIngredients = () => {
           </section>
         ))}
       </div>
-
-      {currentIngredient && (
-        <Modal title="Детали ингредиента" onClose={closeModal}>
-          <IngredientDetails ingredient={currentIngredient} />
-        </Modal>
-      )}
     </section>
   );
 };

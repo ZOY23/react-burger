@@ -1,36 +1,43 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './Login.module.css';
-import { useAppDispatch } from '../../services/store/hooks';
+import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { loginUser } from '../../services/actions/authActions';
 
 const Login = () => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [form, setForm] = React.useState({
+    email: '',
+    password: ''
+  });
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { error, isLoading } = useAppSelector(state => state.auth);
   const from = location.state?.from || '/';
 
-   const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password }))
+    dispatch(loginUser(form))
       .unwrap()
       .then(() => {
-        // Всегда перенаправляем на главную после логина
-        navigate('/', { replace: true }); 
+        navigate(from, { replace: true });
       })
-      .catch(() => {
-        // Ошибка обрабатывается в slice
-      });
+      .catch(() => {});
   };
 
   const inputProps = {
     onPointerEnterCapture: () => {},
     onPointerLeaveCapture: () => {},
-    error: false,
-    errorText: 'Ошибка',
+    error: !!error,
+    errorText: error || 'Ошибка',
     size: 'default' as const,
     extraClass: 'mb-6'
   };
@@ -42,16 +49,16 @@ const Login = () => {
         <Input
           type="email"
           placeholder="E-mail"
-          value={email}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          value={form.email}
+          onChange={handleChange}
           name="email"
           {...inputProps}
         />
         <Input
           type="password"
           placeholder="Пароль"
-          value={password}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+          value={form.password}
+          onChange={handleChange}
           name="password"
           {...inputProps}
         />
@@ -60,8 +67,9 @@ const Login = () => {
           type="primary"
           size="medium"
           extraClass="mb-20"
+          disabled={isLoading}
         >
-          Войти
+          {isLoading ? 'Загрузка...' : 'Войти'}
         </Button>
       </form>
       <div className={styles.links}>

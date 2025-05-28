@@ -1,10 +1,10 @@
+// pages/IngredientDetails/IngredientDetails.tsx
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { setCurrentIngredient, clearCurrentIngredient } from '../../services/slices/ingredientsSlice';
 import { IngredientDetails } from '../../components/ingredient-details/ingredient-details';
 import styles from './IngredientDetails.module.css';
-import { IIngredient } from '../../utils/types';
 
 const IngredientDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,21 +14,23 @@ const IngredientDetailsPage = () => {
 
   useEffect(() => {
     if (!currentIngredient && items.length > 0) {
-      const ingredient = items.find((item: IIngredient) => item._id === id);
+      const ingredient = items.find((item) => item._id === id);
       if (ingredient) {
         dispatch(setCurrentIngredient(ingredient));
       } else {
         navigate('/404', { replace: true });
       }
     }
+  }, [id, items, currentIngredient, dispatch, navigate]);
 
+  useEffect(() => {
     return () => {
       dispatch(clearCurrentIngredient());
     };
-  }, [id, items, currentIngredient, dispatch, navigate]);
+  }, [dispatch]);
 
   if (!currentIngredient) {
-    return <div>Загрузка...</div>;
+    return <div className={styles.loading}>Загрузка...</div>;
   }
 
   return (

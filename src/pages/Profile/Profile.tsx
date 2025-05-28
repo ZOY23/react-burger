@@ -1,21 +1,20 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import styles from './Profile.module.css';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
-import { logoutUser } from '../../services/slices/authSlice';
+import { logoutUser } from '../../services/actions/authActions';
 import { IUser } from '../../utils/types';
 
 export const Profile = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user } = useAppSelector(state => state.auth);
+  const user = useAppSelector(state => state.auth.user);
 
   const handleLogout = () => {
     dispatch(logoutUser())
       .unwrap()
       .then(() => navigate('/login'))
       .catch((err: unknown) => {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('Logout failed:', errorMessage);
+        console.error('Logout failed:', err instanceof Error ? err.message : 'Unknown error');
       });
   };
 

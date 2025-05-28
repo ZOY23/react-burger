@@ -1,87 +1,89 @@
-import React, { ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  Input,
-  Button
-} from '@ya.praktikum/react-developer-burger-ui-components';
+import React, { ChangeEvent, FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './Register.module.css';
+import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
+import { registerUser } from '../../services/actions/authActions';
 
 const Register = () => {
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [form, setForm] = React.useState({
+    name: '',
+    email: '',
+    password: ''
+  });
   const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { error, isLoading } = useAppSelector(state => state.auth);
 
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // Обработка регистрации
-    console.log({ name, email, password });
+    dispatch(registerUser(form))
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch(() => {});
+  };
+
+  const inputProps = {
+    onPointerEnterCapture: () => {},
+    onPointerLeaveCapture: () => {},
+    error: false,
+    errorText: 'Ошибка',
+    size: 'default' as const,
   };
 
   return (
     <div className={styles.container}>
       <h1 className={`${styles.title} text text_type_main-medium`}>Регистрация</h1>
+      {error && (
+        <p className={`${styles.error} text text_type_main-default`}>
+          {error}
+        </p>
+      )}
       <form className={styles.form} onSubmit={handleSubmit}>
         <Input
           type="text"
           placeholder="Имя"
-          value={name}
-          onChange={handleNameChange}
+          value={form.name}
+          onChange={handleChange}
           name="name"
-          error={false}
-          errorText="Ошибка"
-          size="default"
-          extraClass="mb-6"
-          onPointerEnterCapture={() => {}}
-          onPointerLeaveCapture={() => {}}
+          {...inputProps}
         />
         <Input
           type="email"
           placeholder="E-mail"
-          value={email}
-          onChange={handleEmailChange}
+          value={form.email}
+          onChange={handleChange}
           name="email"
-          error={false}
-          errorText="Ошибка"
-          size="default"
-          extraClass="mb-6"
-          onPointerEnterCapture={() => {}}
-          onPointerLeaveCapture={() => {}}
+          {...inputProps}
         />
         <Input
           type={isPasswordVisible ? "text" : "password"}
           placeholder="Пароль"
-          value={password}
-          onChange={handlePasswordChange}
+          value={form.password}
+          onChange={handleChange}
           icon={isPasswordVisible ? "HideIcon" : "ShowIcon"}
           onIconClick={() => setIsPasswordVisible(!isPasswordVisible)}
           name="password"
-          error={false}
-          errorText="Ошибка"
-          size="default"
-          extraClass="mb-6"
-          onPointerEnterCapture={() => {}}
-          onPointerLeaveCapture={() => {}}
+          {...inputProps}
         />
         <Button
           htmlType="submit"
           type="primary"
           size="medium"
           extraClass="mb-20"
+          disabled={isLoading}
         >
-          Зарегистрироваться
+          {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
         </Button>
       </form>
       <div className={styles.links}>

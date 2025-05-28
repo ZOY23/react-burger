@@ -1,16 +1,9 @@
-// src/components/ProtectedRouteElement/ProtectedRouteElement.tsx
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../services/store/store';
+// ProtectedRouteElement.tsx
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAppSelector } from '../../services/store/hooks';
-
-export const ProtectedRoute = ({ element }: { element: React.ReactElement }) => {
-  const location = useLocation();
-  const { isAuth } = useAppSelector((state) => state.auth);
-
-  return isAuth ? element : <Navigate to="/login" state={{ from: location }} replace />;
-};
+import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
+import { checkUserAuth } from '../../services/actions/authActions';
+import { getCookie } from '../../utils/cookie';
 
 interface ProtectedRouteElementProps {
   element: React.ReactElement;
@@ -18,17 +11,30 @@ interface ProtectedRouteElementProps {
   onlyForReset?: boolean;
 }
 
-const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({ 
-  element, 
+const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
+  element,
   onlyUnAuth = false,
-  onlyForReset = false 
+  onlyForReset = false
 }) => {
   const location = useLocation();
-  const { isAuth, isLoading } = useSelector((state: RootState) => state.auth);
-  const fromForgotPassword = localStorage.getItem('fromForgotPassword') === 'true';
+  const dispatch = useAppDispatch();
+  const { isAuth, isLoading, error } = useAppSelector(state => state.auth);
+  const resetPasswordVisited = localStorage.getItem('resetPasswordVisited');
+  const accessToken = getCookie('accessToken');
+  const refreshToken = localStorage.getItem('refreshToken');
 
-  if (isLoading) {
-    return null; // или загрузочный спиннер
+  useEffect(() => {
+    if (accessToken || refreshToken) {
+      dispatch(checkUserAuth());
+    }
+  }, [dispatch, accessToken, refreshToken]);
+
+  if (isLoading && (accessToken || refreshToken)) {
+    return <div>Загрузка...</div>;
+  }
+
+  if (onlyForReset && !resetPasswordVisited) {
+    return <Navigate to="/forgot-password" replace />;
   }
 
   if (onlyUnAuth && isAuth) {
@@ -38,10 +44,6 @@ const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
 
   if (!onlyUnAuth && !isAuth) {
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (onlyForReset && !fromForgotPassword) {
-    return <Navigate to="/forgot-password" replace />;
   }
 
   return element;
