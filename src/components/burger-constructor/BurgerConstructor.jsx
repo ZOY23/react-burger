@@ -9,7 +9,7 @@ import {
 import styles from './BurgerConstructor.module.css';
 import { OrderDetails } from '../order-details/order-details';
 import { Modal } from '../modal/modal';
-import { useAppDispatch, useAppSelector } from '../../services/store/store';
+import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { 
   addBun, 
   addIngredient, 
@@ -27,15 +27,19 @@ import {
   selectOrderLoading,
   selectOrderError
 } from '../../services/selectors/constructorSelectors';
+import { selectIsAuthenticated } from '../../services/selectors/authSelectors';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const bun = useAppSelector(selectConstructorBun);
   const ingredients = useAppSelector(selectConstructorIngredients);
   const totalPrice = useAppSelector(selectTotalPrice);
   const orderNumber = useAppSelector(selectOrderNumber);
   const orderLoading = useAppSelector(selectOrderLoading);
   const orderError = useAppSelector(selectOrderError);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   
   const [isOrderModalOpen, setIsOrderModalOpen] = React.useState(false);
 
@@ -55,7 +59,12 @@ export const BurgerConstructor = () => {
     }),
   });
 
-  const handleOrderClick = () => {
+const handleOrderClick = () => {
+  if (!isAuthenticated) {
+    navigate('/login', { state: { from: '/' } }); // Перенаправляем на логин с возвратом на главную
+    return;
+  }
+
     if (!bun) {
       dispatch(resetOrderStatus());
       return;
