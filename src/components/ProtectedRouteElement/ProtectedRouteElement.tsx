@@ -1,9 +1,9 @@
-// ProtectedRouteElement.tsx
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { checkUserAuth } from '../../services/actions/authActions';
 import { getCookie } from '../../utils/cookie';
+import Loader from '../../components/loader/loader';
 
 interface ProtectedRouteElementProps {
   element: React.ReactElement;
@@ -18,7 +18,7 @@ const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
 }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { isAuth, isLoading, error } = useAppSelector(state => state.auth);
+  const { isAuth, isLoading } = useAppSelector(state => state.auth);
   const resetPasswordVisited = localStorage.getItem('resetPasswordVisited');
   const accessToken = getCookie('accessToken');
   const refreshToken = localStorage.getItem('refreshToken');
@@ -30,7 +30,7 @@ const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
   }, [dispatch, accessToken, refreshToken]);
 
   if (isLoading && (accessToken || refreshToken)) {
-    return <div>Загрузка...</div>;
+    return <Loader />;
   }
 
   if (onlyForReset && !resetPasswordVisited) {
@@ -46,7 +46,7 @@ const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return element;
+  return React.cloneElement(element, { key: location.pathname });
 };
 
 export default ProtectedRouteElement;

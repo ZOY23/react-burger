@@ -1,15 +1,23 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../slices/authSlice';
-import ingredientsReducer from '../slices/ingredientsSlice';
-import constructorReducer from '../slices/constructorSlice';
+import { useDispatch } from 'react-redux';
+import rootReducer from './rootReducer';
+import { IIngredient } from '../../utils/types';
+
+// Используем ReturnType для автоматического вывода типа
+export type RootState = ReturnType<typeof rootReducer>;
+export type AppDispatch = typeof store.dispatch;
 
 export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    ingredients: ingredientsReducer,
-    burgerConstructor: constructorReducer,
-  },
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActionPaths: ['payload.timestamp'],
+        ignoredPaths: ['items.dates'],
+      },
+    }),
 });
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export type IngredientsSelector = (state: RootState) => IIngredient[];
+export type AuthStateSelector = (state: RootState) => RootState['auth'];

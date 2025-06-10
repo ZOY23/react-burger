@@ -1,7 +1,6 @@
-// App.tsx
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { AppHeader } from './components/app-header/';
+import { AppHeader } from './components/app-header';
 import styles from './App.module.css';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -18,19 +17,25 @@ import { OrdersHistory } from './pages/Profile/OrdersHistory';
 import { useAppDispatch, useAppSelector } from './services/store/hooks';
 import { IngredientDetails as IngredientDetailsComponent } from './components/ingredient-details/ingredient-details';
 import { forceLogout } from './services/slices/authSlice';
+import { IIngredient } from './utils/types';
 
-function App() {
+interface LocationState {
+  background?: Location;
+  from?: string;
+}
+
+const App: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const background = location.state?.background;
+  const background = (location.state as LocationState)?.background;
   const currentIngredient = useAppSelector(state => state.ingredients.currentIngredient);
 
   useEffect(() => {
     const handleUnauthorized = (event: CustomEvent) => {
       if (event.detail?.message === 'jwt expired' || event.detail?.message === 'No tokens available') {
         dispatch(forceLogout());
-        navigate('/login', { state: { from: location } });
+        navigate('/login', { state: { from: location.pathname } });
       }
     };
 
@@ -45,7 +50,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className={styles.app}>
       <AppHeader />
       <main className={styles.main}>
         <Routes location={background || location}>
@@ -87,6 +92,6 @@ function App() {
       </main>
     </div>
   );
-}
+};
 
 export default App;

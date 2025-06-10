@@ -2,37 +2,35 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './ForgotPassword.module.css';
+import { forgotPassword } from '../../services/actions/authActions';
+import { useAppDispatch } from '../../services/store/hooks';
 
-const ForgotPassword = () => {
+const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://norma.nomoreparties.space/api/password-reset', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const result = await dispatch(forgotPassword({ email })).unwrap();
+      if (result.success) {
         setMessage('Инструкции отправлены на email');
         setError('');
-        localStorage.setItem('fromForgotPassword', 'true');
-        navigate('/reset-password');
-      } else {
-        setError(data.message || 'Неизвестная ошибка');
-        setMessage('');
+        localStorage.setItem('resetPasswordVisited', 'true');
+        navigate('/reset-password', { state: { fromForgotPassword: true } });
       }
-    } catch (error) {
-      setError('Ошибка сети');
+    } catch (err: any) {
+      setError(err.message || 'Неизвестная ошибка');
       setMessage('');
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setError('');
   };
 
   return (
@@ -43,12 +41,13 @@ const ForgotPassword = () => {
           type="email"
           placeholder="Укажите e-mail"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={handleChange}
           name="email"
           error={!!error}
           errorText={error}
           size="default"
           extraClass="mb-6"
+          required
           onPointerEnterCapture={() => {}}
           onPointerLeaveCapture={() => {}}
         />
@@ -62,6 +61,7 @@ const ForgotPassword = () => {
           type="primary"
           size="medium"
           extraClass="mb-20"
+          disabled={!email}
         >
           Восстановить
         </Button>

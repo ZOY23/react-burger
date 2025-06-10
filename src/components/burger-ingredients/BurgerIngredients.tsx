@@ -1,4 +1,3 @@
-// BurgerIngredients.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { Tab, Counter, CurrencyIcon } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './BurgerIngredients.module.css';
@@ -17,14 +16,19 @@ import {
   selectConstructorBun,
   selectConstructorIngredients
 } from '../../services/selectors/constructorSelectors';
+import { IIngredient } from '../../utils/types';
 
 export const BurgerIngredients = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentTab, setCurrentTab] = useState('bun');
-  const containerRef = useRef(null);
-  const sectionsRef = useRef({
+  const [currentTab, setCurrentTab] = useState<'bun' | 'sauce' | 'main'>('bun');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sectionsRef = useRef<{
+    bun: HTMLElement | null;
+    sauce: HTMLElement | null;
+    main: HTMLElement | null;
+  }>({
     bun: null,
     sauce: null,
     main: null
@@ -50,20 +54,21 @@ export const BurgerIngredients = () => {
       const containerRect = container.getBoundingClientRect();
       const containerTop = containerRect.top;
 
-      let closestSection = null;
+      let closestSection: 'bun' | 'sauce' | 'main' | null = null;
       let smallestDistance = Infinity;
 
-      Object.entries(sectionsRef.current).forEach(([type, section]) => {
-        if (section) {
-          const sectionRect = section.getBoundingClientRect();
-          const distance = Math.abs(sectionRect.top - containerTop);
+      (Object.entries(sectionsRef.current) as [keyof typeof sectionsRef.current, HTMLElement | null][])
+        .forEach(([type, section]) => {
+          if (section) {
+            const sectionRect = section.getBoundingClientRect();
+            const distance = Math.abs(sectionRect.top - containerTop);
 
-          if (distance < smallestDistance) {
-            smallestDistance = distance;
-            closestSection = type;
+            if (distance < smallestDistance) {
+              smallestDistance = distance;
+              closestSection = type;
+            }
           }
-        }
-      });
+        });
 
       if (closestSection && closestSection !== currentTab) {
         setCurrentTab(closestSection);
@@ -75,26 +80,29 @@ export const BurgerIngredients = () => {
   }, [currentTab]);
 
   const ingredientsByType = {
-    bun: ingredients.filter(item => item.type === 'bun'),
-    sauce: ingredients.filter(item => item.type === 'sauce'),
-    main: ingredients.filter(item => item.type === 'main')
+    bun: ingredients.filter((item) => item.type === 'bun'),
+    sauce: ingredients.filter((item) => item.type === 'sauce'),
+    main: ingredients.filter((item) => item.type === 'main')
   };
 
-  const handleTabClick = (tab) => {
+  const handleTabClick = (tab: 'bun' | 'sauce' | 'main') => {
     setCurrentTab(tab);
-    sectionsRef.current[tab]?.scrollIntoView({ behavior: 'smooth' });
+    const section = sectionsRef.current[tab];
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
-  const handleIngredientClick = (ingredient) => {
+  const handleIngredientClick = (ingredient: IIngredient) => {
     dispatch(setCurrentIngredient(ingredient));
     navigate(`/ingredients/${ingredient._id}`, { state: { background: location } });
   };
 
-  const getCount = (ingredient) => {
+  const getCount = (ingredient: IIngredient): number => {
     if (ingredient.type === 'bun') {
       return bun && bun._id === ingredient._id ? 2 : 0;
     }
-    return constructorIngredients.filter(item => item._id === ingredient._id).length;
+    return constructorIngredients.filter((item) => item._id === ingredient._id).length;
   };
 
   if (loading && ingredients.length === 0) {
@@ -122,40 +130,59 @@ export const BurgerIngredients = () => {
       </div>
 
       <div className={styles.ingredientsContainer} ref={containerRef}>
-        {Object.entries(ingredientsByType).map(([type, items]) => (
-          <section 
-            key={type} 
-            ref={el => sectionsRef.current[type] = el}
-          >
-            <h2 className="text text_type_main-medium mb-6">
-              {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
-            </h2>
-            <div className={styles.ingredientsGrid}>
-              {items.map((item) => (
-                <IngredientCard 
-                  key={item._id} 
-                  ingredient={item}
-                  count={getCount(item)}
-                  onClick={handleIngredientClick}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+        {(Object.entries(ingredientsByType) as [keyof typeof ingredientsByType, IIngredient[]][])
+          .map(([type, items]) => (
+            <section 
+              key={type} 
+              ref={(el: HTMLElement | null) => {
+                if (el) {
+                  sectionsRef.current[type] = el;
+                }
+              }}
+            >
+              <h2 className="text text_type_main-medium mb-6">
+                {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
+              </h2>
+              <div className={styles.ingredientsGrid}>
+                {items.map((item) => (
+                  <IngredientCard 
+                    key={item._id} 
+                    ingredient={item}
+                    count={getCount(item)}
+                    onClick={handleIngredientClick}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
       </div>
     </section>
   );
 };
 
-const IngredientCard = ({ ingredient, count, onClick }) => {
+interface IngredientCardProps {
+  ingredient: IIngredient;
+  count: number;
+  onClick: (ingredient: IIngredient) => void;
+}
+
+const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient, count, onClick }) => {
   const [, dragRef] = useDrag({
     type: 'ingredient',
     item: { ingredient },
   });
 
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      dragRef(ref.current);
+    }
+  }, [dragRef]);
+
   return (
     <div 
-      ref={dragRef}
+      ref={ref}
       className={styles.card}
       onClick={() => onClick(ingredient)}
       data-testid={`ingredient-${ingredient._id}`}

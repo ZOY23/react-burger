@@ -1,5 +1,5 @@
-import React from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import React, { FC, RefObject } from 'react';
+import { useDrag, useDrop, ConnectDropTarget } from 'react-dnd';
 import { 
   ConstructorElement, 
   Button, 
@@ -29,8 +29,86 @@ import {
 } from '../../services/selectors/constructorSelectors';
 import { selectIsAuthenticated } from '../../services/selectors/authSelectors';
 import { useNavigate } from 'react-router-dom';
+import { IIngredient } from '../../utils/types';
 
-export const BurgerConstructor = () => {
+interface DragItem {
+  index: number;
+  id: string;
+  type: string;
+}
+
+interface ConstructorIngredientProps {
+  ingredient: IIngredient;
+  index: number;
+  moveCard: (dragIndex: number, hoverIndex: number) => void;
+  onRemove: () => void;
+}
+
+const ConstructorIngredient: FC<ConstructorIngredientProps> = ({ 
+  ingredient, 
+  index, 
+  moveCard, 
+  onRemove 
+}) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  const [{ isDragging }, drag] = useDrag({
+    type: 'constructorIngredient',
+    item: () => ({ index, id: ingredient._id, type: 'constructorIngredient' }),
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [{ handlerId }, drop] = useDrop<DragItem, void, { handlerId: any }>({
+    accept: 'constructorIngredient',
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item: DragItem, monitor) {
+      if (!ref.current) return;
+      
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      
+      if (dragIndex === hoverIndex) return;
+      
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = (clientOffset?.y ?? 0) - hoverBoundingRect.top;
+      
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+      
+      moveCard(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
+  drag(drop(ref));
+
+  return (
+    <div 
+      ref={ref}
+      className={`${styles.ingredient} mb-4 ${isDragging ? styles.ingredientDragging : ''}`}
+      data-handler-id={handlerId}
+      data-testid={`constructor-ingredient-${ingredient._id}`}
+    >
+      <DragIcon type="primary" />
+      <ConstructorElement
+        text={ingredient.name}
+        price={ingredient.price}
+        thumbnail={ingredient.image}
+        handleClose={onRemove}
+      />
+    </div>
+  );
+};
+
+export const BurgerConstructor: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const bun = useAppSelector(selectConstructorBun);
@@ -45,7 +123,7 @@ export const BurgerConstructor = () => {
 
   const [{ isHover }, dropTarget] = useDrop({
     accept: ['ingredient', 'constructorIngredient'],
-    drop(item) {
+    drop(item: { ingredient?: IIngredient }) {
       if (item.ingredient) {
         if (item.ingredient.type === 'bun') {
           dispatch(addBun(item.ingredient));
@@ -59,11 +137,11 @@ export const BurgerConstructor = () => {
     }),
   });
 
-const handleOrderClick = () => {
-  if (!isAuthenticated) {
-    navigate('/login', { state: { from: '/' } }); // Перенаправляем на логин с возвратом на главную
-    return;
-  }
+  const handleOrderClick = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/' } });
+      return;
+    }
 
     if (!bun) {
       dispatch(resetOrderStatus());
@@ -91,7 +169,7 @@ const handleOrderClick = () => {
     dispatch(clearConstructor());
   };
 
-  const moveCard = (dragIndex, hoverIndex) => {
+  const moveCard = (dragIndex: number, hoverIndex: number) => {
     if (dragIndex === hoverIndex) return;
     dispatch(moveIngredient({ fromIndex: dragIndex, toIndex: hoverIndex }));
   };
@@ -99,7 +177,7 @@ const handleOrderClick = () => {
   return (
     <section 
       className={`${styles.constructor} ${isHover ? styles.constructorHover : ''} pt-25 pl-4`} 
-      ref={dropTarget}
+      ref={dropTarget as unknown as RefObject<HTMLDivElement>}
       data-testid="burger-constructor"
     >
       {bun && (
@@ -127,7 +205,7 @@ const handleOrderClick = () => {
             ingredient={ingredient}
             index={index}
             moveCard={moveCard}
-            onRemove={() => dispatch(removeIngredient(ingredient.uniqueId))}
+            onRemove={() => dispatch(removeIngredient(ingredient.uniqueId ?? ''))}
           />
         ))}
       </div>
@@ -177,64 +255,5 @@ const handleOrderClick = () => {
         </Modal>
       )}
     </section>
-  );
-};
-
-const ConstructorIngredient = ({ ingredient, index, moveCard, onRemove }) => {
-  const ref = React.useRef(null);
-  
-  const [{ isDragging }, drag] = useDrag({
-    type: 'constructorIngredient',
-    item: () => ({ index }),
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  const [{ handlerId }, drop] = useDrop({
-    accept: 'constructorIngredient',
-    collect(monitor) {
-      return {
-        handlerId: monitor.getHandlerId(),
-      };
-    },
-    hover(item, monitor) {
-      if (!ref.current) return;
-      
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      
-      if (dragIndex === hoverIndex) return;
-      
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
-      
-      moveCard(dragIndex, hoverIndex);
-      item.index = hoverIndex;
-    },
-  });
-
-  drag(drop(ref));
-
-  return (
-    <div 
-      ref={ref}
-      className={`${styles.ingredient} mb-4 ${isDragging ? styles.ingredientDragging : ''}`}
-      data-handler-id={handlerId}
-      data-testid={`constructor-ingredient-${ingredient._id}`}
-    >
-      <DragIcon type="primary" />
-      <ConstructorElement
-        text={ingredient.name}
-        price={ingredient.price}
-        thumbnail={ingredient.image}
-        handleClose={onRemove}
-      />
-    </div>
   );
 };

@@ -26,4 +26,5 @@ root.render(
   </React.StrictMode>
 );
 
-reportWebVitals();
+// Измерение производительности
+reportWebVitals(console.log);

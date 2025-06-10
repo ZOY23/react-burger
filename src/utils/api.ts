@@ -1,10 +1,11 @@
-// api.ts
 import { setCookie, getCookie, deleteCookie } from './cookie';
 
 export const API_URL = 'https://norma.nomoreparties.space/api';
 
-interface ApiResponse {
+interface ApiResponse<T = any> {
   success: boolean;
+  data?: T;
+  message?: string;
   [key: string]: any;
 }
 
@@ -13,10 +14,47 @@ interface TokenResponse {
   refreshToken: string;
 }
 
-let isRefreshing = false;
-let failedQueue: Array<{resolve: (value?: any) => void; reject: (reason?: any) => void}> = [];
+interface RefreshTokenRequest {
+  token: string;
+}
 
-const processQueue = (error: any, token: string | null = null) => {
+interface UserRegistrationRequest {
+  email: string;
+  password: string;
+  name: string;
+}
+
+interface UserLoginRequest {
+  email: string;
+  password: string;
+}
+
+interface UserUpdateRequest {
+  email: string;
+  name: string;
+  password?: string;
+}
+
+interface OrderRequest {
+  ingredients: string[];
+}
+
+interface ResetPasswordRequest {
+  password: string;
+  token: string;
+}
+
+interface ForgotPasswordRequest {
+  email: string;
+}
+
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
@@ -27,7 +65,10 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-async function request(endpoint: string, options: RequestInit = {}): Promise<ApiResponse> {
+async function request<T = any>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
   const res = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
@@ -48,8 +89,10 @@ async function request(endpoint: string, options: RequestInit = {}): Promise<Api
   return data;
 }
 
-export const refreshTokenRequest = async (token: string): Promise<TokenResponse> => {
-  const data = await request('/auth/token', {
+export const refreshTokenRequest = async (
+  token: string
+): Promise<TokenResponse> => {
+  const data = await request<RefreshTokenRequest>('/auth/token', {
     method: 'POST',
     body: JSON.stringify({ token }),
   });
@@ -64,7 +107,10 @@ export const refreshTokenRequest = async (token: string): Promise<TokenResponse>
   };
 };
 
-export const fetchWithRefresh = async (endpoint: string, options: RequestInit = {}): Promise<ApiResponse> => {
+export const fetchWithRefresh = async <T = any>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> => {
   let accessToken = getCookie('accessToken');
   
   if (!accessToken) {
@@ -91,7 +137,7 @@ export const fetchWithRefresh = async (endpoint: string, options: RequestInit = 
   }
 
   try {
-    return await request(endpoint, {
+    return await request<T>(endpoint, {
       ...options,
       headers: {
         ...options.headers,
@@ -104,7 +150,7 @@ export const fetchWithRefresh = async (endpoint: string, options: RequestInit = 
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => fetchWithRefresh(endpoint, options))
+          .then(() => fetchWithRefresh<T>(endpoint, options))
           .catch(err => {
             throw err;
           });
@@ -131,7 +177,7 @@ export const fetchWithRefresh = async (endpoint: string, options: RequestInit = 
         localStorage.setItem('refreshToken', tokenData.refreshToken);
         
         processQueue(null, newAccessToken);
-        return request(endpoint, {
+        return request<T>(endpoint, {
           ...options,
           headers: {
             ...options.headers,
@@ -149,21 +195,27 @@ export const fetchWithRefresh = async (endpoint: string, options: RequestInit = 
   }
 };
 
-export const registerUserRequest = (userData: { email: string; password: string; name: string }): Promise<ApiResponse> => {
+export const registerUserRequest = (
+  userData: UserRegistrationRequest
+): Promise<ApiResponse> => {
   return request('/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
   });
 };
 
-export const loginUserRequest = (credentials: { email: string; password: string }): Promise<ApiResponse> => {
+export const loginUserRequest = (
+  credentials: UserLoginRequest
+): Promise<ApiResponse> => {
   return request('/auth/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
 };
 
-export const logoutUserRequest = (token: string): Promise<ApiResponse> => {
+export const logoutUserRequest = (
+  token: string
+): Promise<ApiResponse> => {
   return request('/auth/logout', {
     method: 'POST',
     body: JSON.stringify({ token }),
@@ -176,16 +228,38 @@ export const getUserRequest = (): Promise<ApiResponse> => {
   });
 };
 
-export const updateUserRequest = (userData: { email: string; name: string; password?: string }): Promise<ApiResponse> => {
+export const updateUserRequest = (
+  userData: UserUpdateRequest
+): Promise<ApiResponse> => {
   return fetchWithRefresh('/auth/user', {
     method: 'PATCH',
     body: JSON.stringify(userData),
   });
 };
 
-export const createOrderRequest = (ingredientIds: string[]): Promise<ApiResponse> => {
+export const createOrderRequest = (
+  ingredientIds: string[]
+): Promise<ApiResponse<{order: {number: number}}>> => {
   return fetchWithRefresh('/orders', {
     method: 'POST',
     body: JSON.stringify({ ingredients: ingredientIds }),
+  });
+};
+
+export const forgotPasswordRequest = (
+  email: string
+): Promise<ApiResponse> => {
+  return request('/password-reset', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+};
+
+export const resetPasswordRequest = (
+  data: ResetPasswordRequest
+): Promise<ApiResponse> => {
+  return request('/password-reset/reset', {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
 };

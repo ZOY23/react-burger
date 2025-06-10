@@ -1,4 +1,3 @@
-// authActions.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
   registerUserRequest,
@@ -6,13 +5,37 @@ import {
   logoutUserRequest,
   getUserRequest,
   updateUserRequest,
-  refreshTokenRequest
+  resetPasswordRequest,
+  forgotPasswordRequest
 } from '../../utils/api';
-import { setCookie, deleteCookie, getCookie } from '../../utils/cookie';
+import { setCookie, deleteCookie } from '../../utils/cookie';
+import { IUser, ForgotPasswordData } from '../../utils/types';
 
-export const registerUser = createAsyncThunk(
+interface RegisterUserData {
+  email: string;
+  password: string;
+  name: string;
+}
+
+interface LoginUserData {
+  email: string;
+  password: string;
+}
+
+interface UpdateUserData {
+  email: string;
+  name: string;
+  password?: string;
+}
+
+interface ResetPasswordData {
+  password: string;
+  token: string;
+}
+
+export const registerUser = createAsyncThunk<IUser, RegisterUserData>(
   'auth/register',
-  async (userData: { email: string; password: string; name: string }, { rejectWithValue }) => {
+  async (userData, { rejectWithValue }) => {
     try {
       const data = await registerUserRequest(userData);
       setCookie('accessToken', data.accessToken.split('Bearer ')[1], { expires: 1200 });
@@ -24,9 +47,9 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-export const loginUser = createAsyncThunk(
+export const loginUser = createAsyncThunk<IUser, LoginUserData>(
   'auth/login',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue }) => {
     try {
       const data = await loginUserRequest(credentials);
       setCookie('accessToken', data.accessToken.split('Bearer ')[1], { expires: 1200 });
@@ -55,7 +78,7 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-export const checkUserAuth = createAsyncThunk(
+export const checkUserAuth = createAsyncThunk<IUser | null>(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
@@ -63,19 +86,41 @@ export const checkUserAuth = createAsyncThunk(
       return data.user;
     } catch (error) {
       if (error instanceof Error && error.message === 'No tokens available') {
-        return rejectWithValue(null); // Специальная обработка для случая отсутствия токенов
+        return rejectWithValue(null);
       }
       return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 );
 
-export const updateUser = createAsyncThunk(
+export const updateUser = createAsyncThunk<IUser, UpdateUserData>(
   'auth/updateUser',
-  async (userData: { email: string; name: string; password?: string }, { rejectWithValue }) => {
+  async (userData, { rejectWithValue }) => {
     try {
       const data = await updateUserRequest(userData);
       return data.user;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'auth/resetPassword',
+  async (data: ResetPasswordData, { rejectWithValue }) => {
+    try {
+      return await resetPasswordRequest(data);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async (data: ForgotPasswordData, { rejectWithValue }) => {
+    try {
+      return await forgotPasswordRequest(JSON.stringify(data));
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
     }
