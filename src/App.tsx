@@ -19,6 +19,7 @@ import { IngredientDetails as IngredientDetailsComponent } from './components/in
 import { forceLogout } from './services/slices/authSlice';
 import { IIngredient } from './utils/types';
 
+
 interface LocationState {
   background?: Location;
   from?: string;

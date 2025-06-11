@@ -3,19 +3,8 @@ import { Tab, Counter, CurrencyIcon } from '@ya.praktikum/react-developer-burger
 import styles from './BurgerIngredients.module.css';
 import { useDrag } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
-import { fetchIngredients } from '../../services/actions/ingredientsActions';
-import { setCurrentIngredient } from '../../services/slices/ingredientsSlice';
+import { fetchIngredients, setCurrentIngredient } from '../../services/slices/ingredientsSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  selectIngredients,
-  selectCurrentIngredient,
-  selectIngredientsLoading,
-  selectIngredientsError
-} from '../../services/selectors/ingredientsSelectors';
-import {
-  selectConstructorBun,
-  selectConstructorIngredients
-} from '../../services/selectors/constructorSelectors';
 import { IIngredient } from '../../utils/types';
 
 export const BurgerIngredients = () => {
@@ -23,6 +12,7 @@ export const BurgerIngredients = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentTab, setCurrentTab] = useState<'bun' | 'sauce' | 'main'>('bun');
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<{
     bun: HTMLElement | null;
@@ -34,18 +24,26 @@ export const BurgerIngredients = () => {
     main: null
   });
 
-  const ingredients = useAppSelector(selectIngredients);
-  const loading = useAppSelector(selectIngredientsLoading);
-  const error = useAppSelector(selectIngredientsError);
-  const bun = useAppSelector(selectConstructorBun);
-  const constructorIngredients = useAppSelector(selectConstructorIngredients);
+  // Получаем данные из хранилища
+  const { 
+    items: ingredients, 
+    loading, 
+    error 
+  } = useAppSelector(state => state.ingredients);
 
+  const { 
+    bun: constructorBun, 
+    ingredients: constructorIngredients 
+  } = useAppSelector(state => state.burgerConstructor);
+
+  // Загружаем ингредиенты при монтировании компонента
   useEffect(() => {
     if (ingredients.length === 0 && !loading) {
       dispatch(fetchIngredients());
     }
   }, [dispatch, ingredients.length, loading]);
 
+  // Обработчик скролла для табов
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -79,12 +77,14 @@ export const BurgerIngredients = () => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [currentTab]);
 
+  // Группируем ингредиенты по типам
   const ingredientsByType = {
-    bun: ingredients.filter((item) => item.type === 'bun'),
-    sauce: ingredients.filter((item) => item.type === 'sauce'),
-    main: ingredients.filter((item) => item.type === 'main')
+    bun: ingredients.filter((item: IIngredient) => item.type === 'bun'),
+    sauce: ingredients.filter((item: IIngredient) => item.type === 'sauce'),
+    main: ingredients.filter((item: IIngredient) => item.type === 'main')
   };
 
+  // Обработчик клика по табу
   const handleTabClick = (tab: 'bun' | 'sauce' | 'main') => {
     setCurrentTab(tab);
     const section = sectionsRef.current[tab];
@@ -93,18 +93,21 @@ export const BurgerIngredients = () => {
     }
   };
 
+  // Обработчик клика по ингредиенту
   const handleIngredientClick = (ingredient: IIngredient) => {
     dispatch(setCurrentIngredient(ingredient));
     navigate(`/ingredients/${ingredient._id}`, { state: { background: location } });
   };
 
+  // Подсчет количества ингредиентов в конструкторе
   const getCount = (ingredient: IIngredient): number => {
     if (ingredient.type === 'bun') {
-      return bun && bun._id === ingredient._id ? 2 : 0;
+      return constructorBun && constructorBun._id === ingredient._id ? 2 : 0;
     }
-    return constructorIngredients.filter((item) => item._id === ingredient._id).length;
+    return constructorIngredients.filter((item: IIngredient) => item._id === ingredient._id).length;
   };
 
+  // Состояния загрузки и ошибки
   if (loading && ingredients.length === 0) {
     return <div className={styles.loading}>Загрузка ингредиентов...</div>;
   }
@@ -118,13 +121,25 @@ export const BurgerIngredients = () => {
       <h1 className="text text_type_main-large mb-5">Соберите бургер</h1>
       
       <div className={`${styles.tabs} mb-10`}>
-        <Tab value="bun" active={currentTab === 'bun'} onClick={() => handleTabClick('bun')}>
+        <Tab 
+          value="bun" 
+          active={currentTab === 'bun'} 
+          onClick={() => handleTabClick('bun')}
+        >
           Булки
         </Tab>
-        <Tab value="sauce" active={currentTab === 'sauce'} onClick={() => handleTabClick('sauce')}>
+        <Tab 
+          value="sauce" 
+          active={currentTab === 'sauce'} 
+          onClick={() => handleTabClick('sauce')}
+        >
           Соусы
         </Tab>
-        <Tab value="main" active={currentTab === 'main'} onClick={() => handleTabClick('main')}>
+        <Tab 
+          value="main" 
+          active={currentTab === 'main'} 
+          onClick={() => handleTabClick('main')}
+        >
           Начинки
         </Tab>
       </div>
@@ -144,7 +159,7 @@ export const BurgerIngredients = () => {
                 {type === 'bun' ? 'Булки' : type === 'sauce' ? 'Соусы' : 'Начинки'}
               </h2>
               <div className={styles.ingredientsGrid}>
-                {items.map((item) => (
+                {items.map((item: IIngredient) => (
                   <IngredientCard 
                     key={item._id} 
                     ingredient={item}
@@ -160,6 +175,7 @@ export const BurgerIngredients = () => {
   );
 };
 
+// Компонент карточки ингредиента
 interface IngredientCardProps {
   ingredient: IIngredient;
   count: number;

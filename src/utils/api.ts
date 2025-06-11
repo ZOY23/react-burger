@@ -10,6 +10,7 @@ interface ApiResponse<T = any> {
 }
 
 interface TokenResponse {
+  success: boolean;
   accessToken: string;
   refreshToken: string;
 }
@@ -54,7 +55,7 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null): void => {
   failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
@@ -65,46 +66,59 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-async function request<T = any>(
+export async function request<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
   });
-  
-  if (!res.ok) {
-    const error = await res.json();
-    const customEvent = new CustomEvent('unauthorized', { detail: error });
-    window.dispatchEvent(customEvent);
-    throw new Error(error.message || `HTTP error! status: ${res.status}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || `HTTP error! status: ${response.status}`);
   }
-  
-  const data = await res.json();
-  if (!data.success) throw new Error('API request was not successful');
-  return data;
+
+  return await response.json();
 }
 
 export const refreshTokenRequest = async (
   token: string
 ): Promise<TokenResponse> => {
-  const data = await request<RefreshTokenRequest>('/auth/token', {
-    method: 'POST',
-    body: JSON.stringify({ token }),
-  });
-  
-  if (!data.accessToken || !data.refreshToken) {
-    throw new Error('Invalid token response');
+  try {
+    const response = await fetch(`${API_URL}/auth/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Token refresh failed');
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.accessToken || !data.refreshToken) {
+      throw new Error('Invalid token response structure');
+    }
+
+    return {
+      success: data.success,
+      accessToken: data.accessToken.replace('Bearer ', ''),
+      refreshToken: data.refreshToken,
+    };
+  } catch (error) {
+    deleteCookie('accessToken');
+    localStorage.removeItem('refreshToken');
+    throw error;
   }
-  
-  return {
-    accessToken: data.accessToken,
-    refreshToken: data.refreshToken
-  };
 };
 
 export const fetchWithRefresh = async <T = any>(
@@ -112,23 +126,18 @@ export const fetchWithRefresh = async <T = any>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   let accessToken = getCookie('accessToken');
-  
+
   if (!accessToken) {
     const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      throw new Error('No tokens available');
-    }
-    
+    if (!refreshToken) throw new Error('No tokens available');
+
     try {
-      const tokenData = await refreshTokenRequest(refreshToken);
-      const tokenParts = tokenData.accessToken.split('Bearer ');
-      if (tokenParts.length < 2) {
-        throw new Error('Invalid token format');
-      }
+      const { accessToken: newToken, refreshToken: newRefreshToken } = 
+        await refreshTokenRequest(refreshToken);
       
-      accessToken = tokenParts[1];
+      accessToken = newToken;
       setCookie('accessToken', accessToken, { expires: 1200 });
-      localStorage.setItem('refreshToken', tokenData.refreshToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
     } catch (error) {
       deleteCookie('accessToken');
       localStorage.removeItem('refreshToken');
@@ -145,15 +154,15 @@ export const fetchWithRefresh = async <T = any>(
       },
     });
   } catch (error) {
-    if (error instanceof Error && (error.message.includes('jwt expired') || error.message.includes('Invalid or missing token'))) {
+    if (error instanceof Error && 
+        (error.message.includes('jwt expired') || 
+         error.message.includes('Invalid or missing token'))) {
+      
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        })
-          .then(() => fetchWithRefresh<T>(endpoint, options))
-          .catch(err => {
-            throw err;
-          });
+        }).then(() => fetchWithRefresh<T>(endpoint, options))
+          .catch(err => { throw err; });
       }
 
       isRefreshing = true;
@@ -166,22 +175,18 @@ export const fetchWithRefresh = async <T = any>(
       }
 
       try {
-        const tokenData = await refreshTokenRequest(refreshToken);
-        const tokenParts = tokenData.accessToken.split('Bearer ');
-        if (tokenParts.length < 2) {
-          throw new Error('Invalid token format');
-        }
+        const { accessToken: newToken, refreshToken: newRefreshToken } = 
+          await refreshTokenRequest(refreshToken);
         
-        const newAccessToken = tokenParts[1];
-        setCookie('accessToken', newAccessToken, { expires: 1200 });
-        localStorage.setItem('refreshToken', tokenData.refreshToken);
+        setCookie('accessToken', newToken, { expires: 1200 });
+        localStorage.setItem('refreshToken', newRefreshToken);
+        processQueue(null, newToken);
         
-        processQueue(null, newAccessToken);
         return request<T>(endpoint, {
           ...options,
           headers: {
             ...options.headers,
-            Authorization: `Bearer ${newAccessToken}`,
+            Authorization: `Bearer ${newToken}`,
           },
         });
       } catch (refreshError) {
