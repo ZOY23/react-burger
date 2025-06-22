@@ -16,6 +16,30 @@ export interface IIngredient {
   uniqueId?: string;
 }
 
+export type TOrderStatus = 'created' | 'pending' | 'done';
+
+export interface IOrder {
+  _id: string;
+  ingredients: string[];
+  status: TOrderStatus;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  number: number;
+}
+
+export interface IOrderWithIngredients extends Omit<IOrder, 'ingredients'> {
+  ingredients: IIngredient[];
+  totalPrice: number;
+}
+
+export interface IOrdersResponse {
+  success: boolean;
+  orders: IOrder[];
+  total: number;
+  totalToday: number;
+}
+
 export interface IOrderResponse {
   name: string;
   order: {
@@ -74,10 +98,20 @@ export interface IAuthState {
   error: string | null;
 }
 
+export interface IOrdersState {
+  feed: IOrder[];
+  userOrders: IOrder[];
+  loading: boolean;
+  error: string | null;
+  total: number;
+  totalToday: number;
+}
+
 export interface RootState {
   auth: IAuthState;
   ingredients: IIngredientsState;
   burgerConstructor: IConstructorState;
+  orders: IOrdersState;
 }
 
 export interface ForgotPasswordData {
@@ -87,4 +121,19 @@ export interface ForgotPasswordData {
 export interface ResetPasswordData {
   password: string;
   token: string;
+}
+
+export interface IOrderWithIngredients extends Omit<IOrder, 'ingredients'> {
+  ingredients: IIngredient[];
+  totalPrice: number;
+}
+
+export interface IOrder {
+  _id: string;
+  ingredients: string[];
+  status: 'done' | 'pending' | 'created';
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  number: number;
 }

@@ -18,7 +18,9 @@ import { useAppDispatch, useAppSelector } from './services/store/hooks';
 import { IngredientDetails as IngredientDetailsComponent } from './components/ingredient-details/ingredient-details';
 import { forceLogout } from './services/slices/authSlice';
 import { IIngredient } from './utils/types';
-
+import { Feed } from './pages/Feed/Feed';
+import { FeedOrderDetails } from './pages/Feed/FeedOrderDetails';
+import { OrderDetails as ProfileOrderDetails } from './pages/Profile/Orders/OrderDetails';
 
 interface LocationState {
   background?: Location;
@@ -75,6 +77,11 @@ const App: React.FC = () => {
             <Route path="orders" element={<OrdersHistory />} />
           </Route>
           <Route path="/ingredients/:id" element={<IngredientDetails />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/feed/:number" element={<FeedOrderDetails />} />
+          <Route path="/profile/orders/:number" element={
+            <ProtectedRouteElement element={<ProfileOrderDetails />} />
+          } />
           <Route path="*" element={<NotFound />} />
         </Routes>
 
@@ -85,6 +92,22 @@ const App: React.FC = () => {
               element={
                 <Modal title="Детали ингредиента" onClose={handleModalClose}>
                   {currentIngredient && <IngredientDetailsComponent ingredient={currentIngredient} />}
+                </Modal>
+              }
+            />
+            <Route
+              path="/feed/:number"
+              element={
+                <Modal title="" onClose={handleModalClose}>
+                  <FeedOrderDetails />
+                </Modal>
+              }
+            />
+            <Route
+              path="/profile/orders/:number"
+              element={
+                <Modal title="" onClose={handleModalClose}>
+                  <ProfileOrderDetails />
                 </Modal>
               }
             />

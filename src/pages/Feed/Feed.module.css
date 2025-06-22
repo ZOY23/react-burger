@@ -1,0 +1,99 @@
+.feed {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.title {
+  font-size: 36px;
+  line-height: 40px;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+}
+
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Стили для скроллбара */
+.ordersList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ordersList::-webkit-scrollbar-track {
+  background: #2F2F37;
+}
+
+.ordersList::-webkit-scrollbar-thumb {
+  background: #8585AD;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.ordersStatus {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+}
+
+.statusTitle {
+  font-size: 24px;
+  line-height: 30px;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+
+.numbersGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.doneNumber {
+  color: #00CCCC;
+  font-size: 28px;
+  line-height: 24px;
+  font-family: 'Iceland', sans-serif;
+}
+
+.number {
+  font-size: 28px;
+  line-height: 24px;
+  font-family: 'Iceland', sans-serif;
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.totalTitle {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+}
+
+.totalNumber {
+  font-size: 144px;
+  line-height: 120px;
+  font-family: 'Iceland', sans-serif;
+  text-shadow: 0px 0px 16px rgba(51, 51, 255, 0.25), 
+               0px 0px 8px rgba(51, 51, 255, 0.25), 
+               0px 4px 32px rgba(51, 51, 255, 0.5);
+}
