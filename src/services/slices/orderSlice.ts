@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IOrder, IOrdersResponse } from '../../utils/types';
-import { request } from '../../utils/api';
+import { fetchWithRefresh, request } from '../../utils/api';
 
 interface OrdersState {
   feed: IOrder[];
@@ -32,12 +32,12 @@ export const fetchFeed = createAsyncThunk<IOrdersResponse>(
   }
 );
 
-export const fetchUserOrders = createAsyncThunk<IOrdersResponse>(
-  'orders/fetchUserOrders',  
+export const fetchUserOrders = createAsyncThunk<IOrder[]>(
+  'orders/fetchUserOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await request('/orders/all');
-      return response as IOrdersResponse;
+      const response = await fetchWithRefresh<{orders: IOrder[]}>('/orders');
+      return response.orders;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -81,8 +81,8 @@ const ordersSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserOrders.fulfilled, (state, action: PayloadAction<IOrdersResponse>) => {
-        state.userOrders = action.payload.orders;
+      .addCase(fetchUserOrders.fulfilled, (state, action: PayloadAction<IOrder[]>) => {
+        state.userOrders = action.payload;
         state.loading = false;
       })
       .addCase(fetchUserOrders.rejected, (state, action: PayloadAction<any>) => {

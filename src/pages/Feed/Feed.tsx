@@ -5,12 +5,13 @@ import styles from './Feed.module.css';
 import { fetchFeed } from '../../services/slices/orderSlice';
 import { selectFeed, selectTotalOrders, selectTotalToday } from '../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../services/selectors/ingredientsSelectors';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { IOrder } from '../../utils/types';
 
 export const Feed = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const orders = useAppSelector(selectFeed);
   const ingredients = useAppSelector(selectIngredients);
   const total = useAppSelector(selectTotalOrders);
@@ -21,7 +22,7 @@ export const Feed = () => {
   }, [dispatch]);
 
   const handleOrderClick = (order: IOrder) => {
-    navigate(`/feed/${order.number}`);
+    navigate(`/feed/${order.number}`, { state: { background: location } });
   };
 
   // Получаем последние 20 заказов

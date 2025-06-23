@@ -7,13 +7,13 @@ interface OrderCardProps {
   order: IOrder;
   ingredientsData: IIngredient[];
   showStatus?: boolean;
-  onClick: (order: IOrder) => void;
+  onClick?: (order: IOrder) => void;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = ({ 
   order, 
   ingredientsData, 
-  showStatus = false, 
+  showStatus = false,
   onClick 
 }) => {
   const statusText = {
@@ -33,7 +33,11 @@ export const OrderCard: React.FC<OrderCardProps> = ({
   const hiddenCount = uniqueIngredients.length > 6 ? uniqueIngredients.length - 6 : 0;
 
   return (
-    <div className={`${styles.card} p-6 mb-4`} onClick={() => onClick(order)}>
+    <div 
+      className={`${styles.card} p-6 mb-4`}
+      onClick={() => onClick && onClick(order)}
+      style={{ cursor: 'pointer' }}
+    >
       <div className={styles.header}>
         <span className={`text text_type_digits-default ${styles.number}`}>#{order.number}</span>
         <span className={`text text_type_main-default text_color_inactive ${styles.date}`}>

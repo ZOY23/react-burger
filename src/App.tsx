@@ -13,7 +13,7 @@ import Home from './pages/Home';
 import IngredientDetails from './pages/IngredientDetails';
 import NotFound from './pages/NotFound';
 import { Modal } from './components/modal/modal';
-import { OrdersHistory } from './pages/Profile/OrdersHistory';
+import { OrdersHistory } from './pages/Profile/Orders/OrdersHistory';
 import { useAppDispatch, useAppSelector } from './services/store/hooks';
 import { IngredientDetails as IngredientDetailsComponent } from './components/ingredient-details/ingredient-details';
 import { forceLogout } from './services/slices/authSlice';
@@ -98,7 +98,7 @@ const App: React.FC = () => {
             <Route
               path="/feed/:number"
               element={
-                <Modal title="" onClose={handleModalClose}>
+                <Modal title="Детали заказа" onClose={handleModalClose}>
                   <FeedOrderDetails />
                 </Modal>
               }
@@ -106,7 +106,7 @@ const App: React.FC = () => {
             <Route
               path="/profile/orders/:number"
               element={
-                <Modal title="" onClose={handleModalClose}>
+                <Modal title="Детали заказа" onClose={handleModalClose}>
                   <ProfileOrderDetails />
                 </Modal>
               }

@@ -8,13 +8,8 @@
   text-align: center;
 }
 
-.title {
-  text-align: center;
-}
-
 .status {
   color: #00CCCC;
-  text-align: center;
 }
 
 .ingredients {
@@ -23,6 +18,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-top: 24px;
 }
 
 .ingredient {
@@ -69,15 +65,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 40px;
 }
 
 .totalPrice {
   display: flex;
   align-items: center;
-}
-
-.done {
-  color: #00CCCC;
 }
 
 .notFound {

@@ -1,4 +1,5 @@
 import { setCookie, getCookie, deleteCookie } from './cookie';
+import { IOrder } from '../utils/types';
 
 export const API_URL = 'https://norma.nomoreparties.space/api';
 
@@ -266,5 +267,12 @@ export const resetPasswordRequest = (
   return request('/password-reset/reset', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+};
+
+// Добавляем новый метод для получения заказов пользователя
+export const getUserOrdersRequest = (): Promise<ApiResponse<{orders: IOrder[]}>> => {
+  return fetchWithRefresh('/orders', {
+    method: 'GET',
   });
 };
