@@ -1,3 +1,4 @@
+// src/services/slices/orderSlice.ts
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IOrder, IOrdersResponse } from '../../utils/types';
 import { fetchWithRefresh, request } from '../../utils/api';
@@ -10,6 +11,7 @@ interface OrdersState {
   total: number;
   totalToday: number;
   currentOrder: IOrder | null;
+  wsConnected: boolean;
 }
 
 const initialState: OrdersState = {
@@ -20,7 +22,11 @@ const initialState: OrdersState = {
   total: 0,
   totalToday: 0,
   currentOrder: null,
+  wsConnected: false,
 };
+
+export const connect = () => ({ type: 'orders/connect' });
+export const disconnect = () => ({ type: 'orders/disconnect' });
 
 export const fetchFeed = createAsyncThunk<IOrdersResponse>(
   'orders/fetchFeed',
@@ -66,6 +72,15 @@ const ordersSlice = createSlice({
       state.feed = action.payload.orders;
       state.total = action.payload.total;
       state.totalToday = action.payload.totalToday;
+    },
+    wsConnectionSuccess: (state) => {
+      state.wsConnected = true;
+    },
+    wsConnectionError: (state) => {
+      state.wsConnected = false;
+    },
+    wsConnectionClosed: (state) => {
+      state.wsConnected = false;
     },
     clearOrders: (state) => {
       state.feed = [];
@@ -121,5 +136,12 @@ const ordersSlice = createSlice({
   },
 });
 
-export const { updateFeed, clearOrders, clearCurrentOrder } = ordersSlice.actions;
+export const { 
+  updateFeed, 
+  clearOrders, 
+  clearCurrentOrder,
+  wsConnectionSuccess,
+  wsConnectionError,
+  wsConnectionClosed
+} = ordersSlice.actions;
 export default ordersSlice.reducer;

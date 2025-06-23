@@ -1,3 +1,4 @@
+// src/services/selectors/ordersSelectors.ts
 import { RootState } from '../store/store';
 import { IOrder } from '../../utils/types';
 
@@ -8,6 +9,7 @@ export const selectOrdersError = (state: RootState): string | null => state.orde
 export const selectTotalOrders = (state: RootState): number => state.orders.total;
 export const selectTotalToday = (state: RootState): number => state.orders.totalToday;
 export const selectCurrentOrder = (state: RootState): IOrder | null => state.orders.currentOrder;
+export const selectWsConnected = (state: RootState): boolean => state.orders.wsConnected;
 
 export const selectOrderByNumber = (state: RootState, number: number): IOrder | undefined => {
   const allOrders = [...state.orders.feed, ...state.orders.userOrders];

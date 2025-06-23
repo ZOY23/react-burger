@@ -1,8 +1,9 @@
+// src/pages/Feed/Feed.tsx
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { OrderCard } from '../../components/order-card/OrderCard';
 import styles from './Feed.module.css';
-import { fetchFeed } from '../../services/slices/orderSlice';
+import { connect, disconnect } from '../../services/slices/orderSlice';
 import { selectFeed, selectTotalOrders, selectTotalToday } from '../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../services/selectors/ingredientsSelectors';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -18,25 +19,20 @@ export const Feed = () => {
   const totalToday = useAppSelector(selectTotalToday);
 
   useEffect(() => {
-    dispatch(fetchFeed());
+    dispatch(connect());
+
+    return () => {
+      dispatch(disconnect());
+    };
   }, [dispatch]);
 
   const handleOrderClick = (order: IOrder) => {
     navigate(`/feed/${order.number}`, { state: { background: location } });
   };
 
-  // Получаем последние 20 заказов
-  const recentOrders = [...orders].reverse().slice(0, 20);
-
-  // Готовые заказы (первые 10)
-  const readyOrders = recentOrders
-    .filter(order => order.status === 'done')
-    .slice(0, 10);
-
-  // Заказы в работе (первые 10)
-  const inProgressOrders = recentOrders
-    .filter(order => order.status !== 'done')
-    .slice(0, 10);
+  const recentOrders = [...orders].reverse();
+  const readyOrders = recentOrders.filter(order => order.status === 'done').slice(0, 10);
+  const inProgressOrders = recentOrders.filter(order => order.status !== 'done').slice(0, 10);
 
   return (
     <div className={styles.feed}>

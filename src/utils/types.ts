@@ -1,3 +1,4 @@
+// src/utils/types.ts
 export type TIngredientType = 'bun' | 'sauce' | 'main';
 
 export interface IIngredient {
@@ -105,6 +106,8 @@ export interface IOrdersState {
   error: string | null;
   total: number;
   totalToday: number;
+  currentOrder: IOrder | null;
+  wsConnected: boolean;
 }
 
 export interface RootState {
@@ -123,17 +126,15 @@ export interface ResetPasswordData {
   token: string;
 }
 
-export interface IOrderWithIngredients extends Omit<IOrder, 'ingredients'> {
-  ingredients: IIngredient[];
-  totalPrice: number;
+// Добавляем типы для WebSocket
+export interface SocketAction {
+  type: 'orders/connect' | 'orders/disconnect';
+  payload?: string;
 }
 
-export interface IOrder {
-  _id: string;
-  ingredients: string[];
-  status: 'done' | 'pending' | 'created';
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  number: number;
+export interface WebSocketData {
+  success: boolean;
+  orders: IOrder[];
+  total: number;
+  totalToday: number;
 }
