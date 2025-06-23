@@ -9,6 +9,7 @@ interface OrdersState {
   error: string | null;
   total: number;
   totalToday: number;
+  currentOrder: IOrder | null;
 }
 
 const initialState: OrdersState = {
@@ -18,6 +19,7 @@ const initialState: OrdersState = {
   error: null,
   total: 0,
   totalToday: 0,
+  currentOrder: null,
 };
 
 export const fetchFeed = createAsyncThunk<IOrdersResponse>(
@@ -44,6 +46,18 @@ export const fetchUserOrders = createAsyncThunk<IOrder[]>(
   }
 );
 
+export const fetchOrderByNumber = createAsyncThunk<IOrder, number>(
+  'orders/fetchOrderByNumber',
+  async (number, { rejectWithValue }) => {
+    try {
+      const response = await request(`/orders/${number}`);
+      return response.orders[0];
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const ordersSlice = createSlice({
   name: 'orders',
   initialState,
@@ -59,6 +73,9 @@ const ordersSlice = createSlice({
       state.total = 0;
       state.totalToday = 0;
       state.error = null;
+    },
+    clearCurrentOrder: (state) => {
+      state.currentOrder = null;
     },
   },
   extraReducers: (builder) => {
@@ -88,9 +105,21 @@ const ordersSlice = createSlice({
       .addCase(fetchUserOrders.rejected, (state, action: PayloadAction<any>) => {
         state.error = action.payload;
         state.loading = false;
+      })
+      .addCase(fetchOrderByNumber.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderByNumber.fulfilled, (state, action: PayloadAction<IOrder>) => {
+        state.currentOrder = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchOrderByNumber.rejected, (state, action: PayloadAction<any>) => {
+        state.error = action.payload;
+        state.loading = false;
       });
   },
 });
 
-export const { updateFeed, clearOrders } = ordersSlice.actions;
+export const { updateFeed, clearOrders, clearCurrentOrder } = ordersSlice.actions;
 export default ordersSlice.reducer;

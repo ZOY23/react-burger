@@ -1,23 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAppSelector } from '../../../services/store/hooks';
-import { selectOrderByNumber } from '../../../services/selectors/ordersSelectors';
+import { useAppDispatch, useAppSelector } from '../../../services/store/hooks';
+import { selectOrderByNumber, selectCurrentOrder } from '../../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../../services/selectors/ingredientsSelectors';
 import { CurrencyIcon, FormattedDate } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './OrderDetails.module.css';
 import { IIngredient } from '../../../utils/types';
+import { fetchOrderByNumber } from '../../../services/slices/orderSlice';
 
 export const OrderDetails: React.FC = () => {
   const { number } = useParams<{ number: string }>();
   const orderNumber = number ? parseInt(number) : 0;
   const order = useAppSelector(state => selectOrderByNumber(state, orderNumber));
+  const currentOrder = useAppSelector(selectCurrentOrder);
   const ingredients = useAppSelector(selectIngredients);
+  const dispatch = useAppDispatch();
 
-  if (!order) {
-    return <div className={styles.notFound}>Заказ не найден</div>;
+  useEffect(() => {
+    if (!order && orderNumber) {
+      dispatch(fetchOrderByNumber(orderNumber));
+    }
+  }, [dispatch, order, orderNumber]);
+
+  const orderToDisplay = order || currentOrder;
+
+  if (!orderToDisplay) {
+    return <div className={styles.notFound}>Загрузка заказа...</div>;
   }
 
-  const orderIngredients = order.ingredients
+  const orderIngredients = orderToDisplay.ingredients
     .map(id => ingredients.find(ing => ing._id === id))
     .filter(Boolean) as IIngredient[];
 
@@ -28,12 +39,12 @@ export const OrderDetails: React.FC = () => {
     done: 'Выполнен',
     pending: 'Готовится',
     created: 'Создан',
-  }[order.status];
+  }[orderToDisplay.status];
 
   return (
     <div className={styles.container}>
-      <span className={`text text_type_digits-default ${styles.number}`}>#{order.number}</span>
-      <h2 className="text text_type_main-medium mt-10">{order.name}</h2>
+      <span className={`text text_type_digits-default ${styles.number}`}>#{orderToDisplay.number}</span>
+      <h2 className="text text_type_main-medium mt-10">{orderToDisplay.name}</h2>
       <p className={`text text_type_main-default mt-3 ${styles.status}`}>
         {statusText}
       </p>
@@ -69,7 +80,7 @@ export const OrderDetails: React.FC = () => {
       
       <div className={styles.footer}>
         <span className="text text_type_main-default text_color_inactive">
-          <FormattedDate date={new Date(order.createdAt)} />
+          <FormattedDate date={new Date(orderToDisplay.createdAt)} />
         </span>
         <div className={styles.totalPrice}>
           <span className="text text_type_digits-default mr-2">{totalPrice}</span>

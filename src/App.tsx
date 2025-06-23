@@ -21,6 +21,7 @@ import { IIngredient } from './utils/types';
 import { Feed } from './pages/Feed/Feed';
 import { FeedOrderDetails } from './pages/Feed/FeedOrderDetails';
 import { OrderDetails as ProfileOrderDetails } from './pages/Profile/Orders/OrderDetails';
+import { clearCurrentOrder } from './services/slices/orderSlice';
 
 interface LocationState {
   background?: Location;
@@ -49,6 +50,7 @@ const App: React.FC = () => {
   }, [dispatch, navigate, location]);
 
   const handleModalClose = () => {
+    dispatch(clearCurrentOrder());
     navigate(-1);
   };
 
