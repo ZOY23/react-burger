@@ -1,4 +1,3 @@
-// src/services/slices/orderSlice.ts
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IOrder, IOrdersResponse } from '../../utils/types';
 import { fetchWithRefresh, request } from '../../utils/api';
@@ -26,14 +25,15 @@ const initialState: OrdersState = {
 };
 
 export const connect = () => ({ type: 'orders/connect' });
+export const connectUser = () => ({ type: 'orders/connectUser' });
 export const disconnect = () => ({ type: 'orders/disconnect' });
 
-export const fetchFeed = createAsyncThunk<IOrdersResponse>(
-  'orders/fetchFeed',
-  async (_, { rejectWithValue }) => {
+export const fetchOrderByNumber = createAsyncThunk<IOrder, number>(
+  'orders/fetchOrderByNumber',
+  async (number, { rejectWithValue }) => {
     try {
-      const response = await request('/orders/all');
-      return response as IOrdersResponse;
+      const response = await request(`/orders/${number}`);
+      return response.orders[0];
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -52,24 +52,21 @@ export const fetchUserOrders = createAsyncThunk<IOrder[]>(
   }
 );
 
-export const fetchOrderByNumber = createAsyncThunk<IOrder, number>(
-  'orders/fetchOrderByNumber',
-  async (number, { rejectWithValue }) => {
-    try {
-      const response = await request(`/orders/${number}`);
-      return response.orders[0];
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
 const ordersSlice = createSlice({
   name: 'orders',
   initialState,
   reducers: {
-    updateFeed: (state, action: PayloadAction<{orders: IOrder[]; total: number; totalToday: number}>) => {
-      state.feed = action.payload.orders;
+    updateFeed: (state, action: PayloadAction<{
+      orders: IOrder[];
+      total: number;
+      totalToday: number;
+      isUser: boolean;
+    }>) => {
+      if (action.payload.isUser) {
+        state.userOrders = action.payload.orders;
+      } else {
+        state.feed = action.payload.orders;
+      }
       state.total = action.payload.total;
       state.totalToday = action.payload.totalToday;
     },
@@ -82,66 +79,26 @@ const ordersSlice = createSlice({
     wsConnectionClosed: (state) => {
       state.wsConnected = false;
     },
-    clearOrders: (state) => {
-      state.feed = [];
-      state.userOrders = [];
-      state.total = 0;
-      state.totalToday = 0;
-      state.error = null;
-    },
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFeed.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchFeed.fulfilled, (state, action: PayloadAction<IOrdersResponse>) => {
-        state.feed = action.payload.orders;
-        state.total = action.payload.total;
-        state.totalToday = action.payload.totalToday;
-        state.loading = false;
-      })
-      .addCase(fetchFeed.rejected, (state, action: PayloadAction<any>) => {
-        state.error = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchUserOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserOrders.fulfilled, (state, action: PayloadAction<IOrder[]>) => {
-        state.userOrders = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchUserOrders.rejected, (state, action: PayloadAction<any>) => {
-        state.error = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchOrderByNumber.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchOrderByNumber.fulfilled, (state, action: PayloadAction<IOrder>) => {
+      .addCase(fetchOrderByNumber.fulfilled, (state, action) => {
         state.currentOrder = action.payload;
-        state.loading = false;
       })
-      .addCase(fetchOrderByNumber.rejected, (state, action: PayloadAction<any>) => {
-        state.error = action.payload;
-        state.loading = false;
+      .addCase(fetchUserOrders.fulfilled, (state, action) => {
+        state.userOrders = action.payload;
       });
   },
 });
 
 export const { 
-  updateFeed, 
-  clearOrders, 
-  clearCurrentOrder,
+  updateFeed,
   wsConnectionSuccess,
   wsConnectionError,
-  wsConnectionClosed
+  wsConnectionClosed,
+  clearCurrentOrder
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

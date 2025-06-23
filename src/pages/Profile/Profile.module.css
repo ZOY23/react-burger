@@ -85,3 +85,18 @@
   gap: 20px;
   margin-top: 20px;
 }
+
+.ordersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #8585AD;
+}

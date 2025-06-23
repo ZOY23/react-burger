@@ -1,49 +1,48 @@
-// src/services/middleware/socketMiddleware.ts
 import { Middleware, MiddlewareAPI } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from '../store/store';
 import { updateFeed, wsConnectionSuccess, wsConnectionError, wsConnectionClosed } from '../slices/orderSlice';
+import { getCookie } from '../../utils/cookie';
 
 interface SocketAction {
-  type: 'orders/connect' | 'orders/disconnect';
+  type: 'orders/connect' | 'orders/disconnect' | 'orders/connectUser';
   payload?: string;
 }
 
-export const socketMiddleware = (wsUrl: string): Middleware<{}, RootState> => {
+export const socketMiddleware = (): Middleware => {
   return (store: MiddlewareAPI<AppDispatch, RootState>) => {
     let socket: WebSocket | null = null;
+    let isUser = false;
 
-    return (next) => (action: unknown) => {
-      const typedAction = action as SocketAction;
+    return next => (action: unknown) => {
       const { dispatch } = store;
-      const { type } = typedAction;
+      const { type } = action as SocketAction;
 
       if (type === 'orders/connect') {
-        socket = new WebSocket(wsUrl);
-        
+        socket = new WebSocket('wss://norma.nomoreparties.space/orders/all');
+        isUser = false;
+      }
+
+      if (type === 'orders/connectUser') {
+        const token = getCookie('accessToken')?.split(' ')[1];
+        if (!token) return;
+        socket = new WebSocket(`wss://norma.nomoreparties.space/orders?token=${token}`);
+        isUser = true;
+      }
+
+      if (socket) {
         socket.onopen = () => {
           dispatch(wsConnectionSuccess());
         };
 
-        socket.onerror = (error) => {
-          dispatch(wsConnectionError());
-          console.log('WebSocket error:', error);
+        socket.onmessage = event => {
+          const { success, orders, total, totalToday } = JSON.parse(event.data);
+          if (success) {
+            dispatch(updateFeed({ orders, total, totalToday, isUser }));
+          }
         };
 
-        socket.onmessage = (event) => {
-          const data = JSON.parse(event.data) as {
-            success: boolean;
-            orders: any[];
-            total: number;
-            totalToday: number;
-          };
-          
-          if (data.success) {
-            dispatch(updateFeed({
-              orders: data.orders,
-              total: data.total,
-              totalToday: data.totalToday
-            }));
-          }
+        socket.onerror = () => {
+          dispatch(wsConnectionError());
         };
 
         socket.onclose = () => {
