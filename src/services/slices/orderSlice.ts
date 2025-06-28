@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IOrder, IOrdersResponse } from '../../utils/types';
 import { fetchWithRefresh, request } from '../../utils/api';
+import { RootState } from '../store/store';
 
 interface OrdersState {
   feed: IOrder[];
@@ -11,6 +12,7 @@ interface OrdersState {
   totalToday: number;
   currentOrder: IOrder | null;
   wsConnected: boolean;
+  wsError: string | null;
 }
 
 const initialState: OrdersState = {
@@ -22,6 +24,7 @@ const initialState: OrdersState = {
   totalToday: 0,
   currentOrder: null,
   wsConnected: false,
+  wsError: null,
 };
 
 export const connect = () => ({ type: 'orders/connect' });
@@ -72,15 +75,21 @@ const ordersSlice = createSlice({
     },
     wsConnectionSuccess: (state) => {
       state.wsConnected = true;
+      state.wsError = null;
     },
-    wsConnectionError: (state) => {
+    wsConnectionError: (state, action: PayloadAction<string>) => {
       state.wsConnected = false;
+      state.wsError = action.payload;
     },
     wsConnectionClosed: (state) => {
       state.wsConnected = false;
+      state.wsError = null;
     },
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
+    },
+    clearWsError: (state) => {
+      state.wsError = null;
     },
   },
   extraReducers: (builder) => {
@@ -99,6 +108,13 @@ export const {
   wsConnectionSuccess,
   wsConnectionError,
   wsConnectionClosed,
-  clearCurrentOrder
+  clearCurrentOrder,
+  clearWsError
 } = ordersSlice.actions;
+
+// Селекторы
+export const selectOrdersState = (state: RootState) => state.orders;
+export const selectWsConnected = (state: RootState) => state.orders.wsConnected;
+export const selectWsError = (state: RootState) => state.orders.wsError;
+
 export default ordersSlice.reducer;

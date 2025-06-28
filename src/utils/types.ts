@@ -132,9 +132,14 @@ export interface SocketAction {
   payload?: string;
 }
 
-export interface WebSocketData {
-  success: boolean;
-  orders: IOrder[];
+export interface IOrdersState {
+  feed: IOrder[];
+  userOrders: IOrder[];
+  loading: boolean;
+  error: string | null;
   total: number;
   totalToday: number;
+  currentOrder: IOrder | null;
+  wsConnected: boolean;
+  wsError: string | null; // Добавлено это поле
 }

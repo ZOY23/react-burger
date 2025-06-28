@@ -246,9 +246,20 @@ export const updateUserRequest = (
 export const createOrderRequest = (
   ingredientIds: string[]
 ): Promise<ApiResponse<{order: {number: number}}>> => {
-  return fetchWithRefresh('/orders', {
-    method: 'POST',
-    body: JSON.stringify({ ingredients: ingredientIds }),
+  return new Promise((resolve, reject) => {
+    fetchWithRefresh('/orders', {
+      method: 'POST',
+      body: JSON.stringify({ ingredients: ingredientIds }),
+    })
+      .then(response => {
+        // Эмулируем задержку в 15 секунд перед разрешением промиса
+        setTimeout(() => {
+          resolve(response);
+        }, 15000);
+      })
+      .catch(error => {
+        reject(error);
+      });
   });
 };
 
