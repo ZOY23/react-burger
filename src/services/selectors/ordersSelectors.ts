@@ -10,6 +10,7 @@ export const selectTotalToday = (state: RootState): number => state.orders.total
 export const selectCurrentOrder = (state: RootState): IOrder | null => state.orders.currentOrder;
 export const selectWsConnected = (state: RootState): boolean => state.orders.wsConnected;
 export const selectWsError = (state: RootState): string | null => state.orders.wsError;
+export const selectCurrentOrderNumber = (state: RootState) => state.orders.currentOrderNumber;
 
 export const selectOrderByNumber = (state: RootState, number: number): IOrder | undefined => {
   const allOrders = [...state.orders.feed, ...state.orders.userOrders];

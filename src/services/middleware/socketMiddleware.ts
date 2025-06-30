@@ -15,13 +15,15 @@ export const socketMiddleware = (): Middleware => {
     let reconnectAttempt = 0;
     const maxReconnectAttempts = 3;
     let reconnectTimer: NodeJS.Timeout;
+    const wsUrl = 'wss://norma.nomoreparties.space';
 
     return next => (action: unknown) => {
       const { dispatch } = store;
-      const { type } = action as SocketAction;
+      const { type, payload } = action as SocketAction;
 
       if (type === 'orders/connect') {
-        socket = new WebSocket('wss://norma.nomoreparties.space/orders/all');
+        const endpoint = payload || '/orders/all';
+        socket = new WebSocket(`${wsUrl}${endpoint}`);
         isUser = false;
       }
 
@@ -33,7 +35,8 @@ export const socketMiddleware = (): Middleware => {
         }
         // Удаляем 'Bearer ' из токена, если он есть
         const cleanToken = token.replace('Bearer ', '');
-        socket = new WebSocket(`wss://norma.nomoreparties.space/orders?token=${cleanToken}`);
+        const endpoint = payload || `/orders?token=${cleanToken}`;
+        socket = new WebSocket(`${wsUrl}${endpoint}`);
         isUser = true;
       }
 
@@ -79,7 +82,8 @@ export const socketMiddleware = (): Middleware => {
               const token = getCookie('accessToken');
               if (token) {
                 const cleanToken = token.replace('Bearer ', '');
-                socket = new WebSocket(`wss://norma.nomoreparties.space/orders?token=${cleanToken}`);
+                const endpoint = payload || `/orders?token=${cleanToken}`;
+                socket = new WebSocket(`${wsUrl}${endpoint}`);
               }
             }, 3000 * reconnectAttempt);
           }

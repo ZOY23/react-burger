@@ -60,6 +60,9 @@ const App: React.FC = () => {
       <main className={styles.main}>
         <Routes location={background || location}>
           <Route path="/" element={<Home />} />
+          <Route path="/profile/orders/:number" element={
+  <ProtectedRouteElement element={<ProfileOrderDetails />} />
+} />
           <Route path="/login" element={
             <ProtectedRouteElement element={<Login />} onlyUnAuth />
           } />
@@ -97,6 +100,14 @@ const App: React.FC = () => {
                 </Modal>
               }
             />
+            <Route
+  path="/profile/orders/:number"
+  element={
+    <Modal title="Детали заказа" onClose={handleModalClose}>
+      <ProfileOrderDetails />
+    </Modal>
+  }
+/>
             <Route
               path="/feed/:number"
               element={

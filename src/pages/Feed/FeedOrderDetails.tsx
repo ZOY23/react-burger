@@ -3,12 +3,12 @@ import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { selectOrderByNumber, selectCurrentOrder } from '../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../services/selectors/ingredientsSelectors';
-import { OrderInfo } from '../../components/order-info/OrderInfo';
-import { IIngredient, IOrder } from '../../utils/types';
-import { IOrderWithIngredients } from '../../utils/types';
+import { ProfileOrderDetails } from '../../components/order-info/ProfileOrderDetails'; // Изменен импорт
+import { IIngredient, IOrder, IOrderWithIngredients } from '../../utils/types';
 import { fetchOrderByNumber } from '../../services/slices/orderSlice';
+import Loader from '../../components/loader/loader';
 
-export const FeedOrderDetails = () => {
+export const FeedOrderDetails: React.FC = () => {
   const { number } = useParams<{ number: string }>();
   const orderNumber = number ? parseInt(number) : 0;
   const order = useAppSelector(state => selectOrderByNumber(state, orderNumber));
@@ -17,22 +17,26 @@ export const FeedOrderDetails = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!order && orderNumber) {
+    if (orderNumber > 0 && !order) {
       dispatch(fetchOrderByNumber(orderNumber));
     }
   }, [dispatch, order, orderNumber]);
 
-  const orderToDisplay = order || currentOrder;
+  if (!order && !currentOrder) {
+    return <Loader />;
+  }
 
+  const orderToDisplay = order || currentOrder;
+  
   if (!orderToDisplay) {
-    return <div>Загрузка заказа...</div>;
+    return <div>Заказ не найден</div>;
   }
 
   const orderIngredients = orderToDisplay.ingredients
     .map(id => ingredients.find(ing => ing._id === id))
     .filter(Boolean) as IIngredient[];
 
-  const totalPrice = orderIngredients.reduce((sum, item) => sum + item.price, 0);
+  const totalPrice = orderIngredients.reduce((sum, item) => sum + (item?.price || 0), 0);
 
   const orderWithIngredients: IOrderWithIngredients = {
     ...orderToDisplay,
@@ -40,5 +44,5 @@ export const FeedOrderDetails = () => {
     totalPrice,
   };
 
-  return <OrderInfo order={orderWithIngredients} />;
+  return <ProfileOrderDetails order={orderWithIngredients} />;
 };

@@ -11,6 +11,7 @@ interface OrdersState {
   total: number;
   totalToday: number;
   currentOrder: IOrder | null;
+  currentOrderNumber: number | null;
   wsConnected: boolean;
   wsError: string | null;
 }
@@ -23,6 +24,7 @@ const initialState: OrdersState = {
   total: 0,
   totalToday: 0,
   currentOrder: null,
+  currentOrderNumber: null,
   wsConnected: false,
   wsError: null,
 };
@@ -87,6 +89,10 @@ const ordersSlice = createSlice({
     },
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
+      state.currentOrderNumber = null;
+    },
+    setCurrentOrderNumber: (state, action: PayloadAction<number | null>) => {
+      state.currentOrderNumber = action.payload;
     },
     clearWsError: (state) => {
       state.wsError = null;
@@ -96,6 +102,7 @@ const ordersSlice = createSlice({
     builder
       .addCase(fetchOrderByNumber.fulfilled, (state, action) => {
         state.currentOrder = action.payload;
+        state.currentOrderNumber = action.payload.number;
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
         state.userOrders = action.payload;
@@ -109,12 +116,13 @@ export const {
   wsConnectionError,
   wsConnectionClosed,
   clearCurrentOrder,
+  setCurrentOrderNumber,
   clearWsError
 } = ordersSlice.actions;
 
-// Селекторы
 export const selectOrdersState = (state: RootState) => state.orders;
 export const selectWsConnected = (state: RootState) => state.orders.wsConnected;
 export const selectWsError = (state: RootState) => state.orders.wsError;
+export const selectCurrentOrderNumber = (state: RootState) => state.orders.currentOrderNumber;
 
 export default ordersSlice.reducer;

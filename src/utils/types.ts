@@ -143,3 +143,8 @@ export interface IOrdersState {
   wsConnected: boolean;
   wsError: string | null; // Добавлено это поле
 }
+
+export interface IOrderWithIngredients extends Omit<IOrder, 'ingredients'> {
+  ingredients: IIngredient[];
+  totalPrice: number;
+}

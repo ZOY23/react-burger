@@ -4,23 +4,44 @@ import { OrderCard } from '../../../components/order-card/OrderCard';
 import { 
   selectUserOrders, 
   selectWsConnected, 
-  selectWsError 
+  selectWsError,
+  selectCurrentOrderNumber,
+  selectOrderByNumber
 } from '../../../services/selectors/ordersSelectors';
 import { 
   connectUser, 
   disconnect, 
-  clearWsError 
+  clearWsError,
+  setCurrentOrderNumber
 } from '../../../services/slices/orderSlice';
 import styles from './Orders.module.css';
-import { IOrder } from '../../../utils/types';
+import { IOrder, IIngredient } from '../../../utils/types';
 import { Modal } from '../../../components/modal/modal';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Loader from '../../../components/loader/loader';
+import { ProfileOrderDetails } from '../../../components/order-info/ProfileOrderDetails';
+
 
 export const Orders: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const orders = useAppSelector(selectUserOrders);
   const wsConnected = useAppSelector(selectWsConnected);
   const wsError = useAppSelector(selectWsError);
+  const currentOrderNumber = useAppSelector(selectCurrentOrderNumber);
   const ingredients = useAppSelector(state => state.ingredients.items);
+  const currentOrder = useAppSelector(state => selectOrderByNumber(state, currentOrderNumber || 0));
+
+  const handleOrderClick = (orderNumber: number) => {
+    dispatch(setCurrentOrderNumber(orderNumber));
+    navigate(`/profile/orders/${orderNumber}`, { state: { background: location } });
+  };
+
+  const handleErrorClose = () => {
+    dispatch(clearWsError());
+    dispatch(connectUser());
+  };
 
   useEffect(() => {
     dispatch(connectUser());
@@ -29,14 +50,24 @@ export const Orders: React.FC = () => {
     };
   }, [dispatch]);
 
-  const handleErrorClose = () => {
-    dispatch(clearWsError());
-    dispatch(connectUser());
-  };
+  useEffect(() => {
+    if (currentOrderNumber && location.pathname === '/profile/orders') {
+      navigate(`/profile/orders/${currentOrderNumber}`, { state: { background: location } });
+    }
+  }, [currentOrderNumber, navigate, location]);
 
   if (!wsConnected && !wsError) {
-    return <div className={styles.loading}>Загрузка...</div>;
+    return <Loader />;
   }
+
+  const orderWithIngredients = currentOrder ? {
+    ...currentOrder,
+    ingredients: currentOrder.ingredients
+      .map(id => ingredients.find(ing => ing._id === id))
+      .filter((ing): ing is IIngredient => !!ing),
+    totalPrice: currentOrder.ingredients
+      .reduce((sum, id) => sum + (ingredients.find(ing => ing._id === id)?.price || 0), 0)
+  } : null;
 
   return (
     <div className={styles.container}>
@@ -63,6 +94,7 @@ export const Orders: React.FC = () => {
               order={order}
               ingredientsData={ingredients}
               showStatus={true}
+              onClick={() => handleOrderClick(order.number)}
             />
           ))
         ) : (
@@ -71,6 +103,12 @@ export const Orders: React.FC = () => {
           </p>
         )}
       </div>
+
+      {location.state?.background && orderWithIngredients && (
+        <Modal title="Детали заказа" onClose={() => navigate('/profile/orders')}>
+          <ProfileOrderDetails order={orderWithIngredients} />
+        </Modal>
+      )}
     </div>
   );
 };
