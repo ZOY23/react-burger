@@ -54,7 +54,7 @@ const App: React.FC = () => {
 
   const handleModalClose = () => {
     dispatch(clearCurrentOrder());
-    navigate('/profile/orders', { replace: true });
+    navigate(-1); // Изменено: возврат на предыдущий маршрут вместо жесткого перехода
   };
 
   return (
@@ -85,7 +85,9 @@ const App: React.FC = () => {
           <Route path="/feed" element={<Feed />} />
           <Route path="/feed/:number" element={<FeedOrderDetails />} />
           <Route path="/profile/orders/:number" element={
-            <ProtectedRouteElement element={<OrderDetails />} />
+            <ProtectedRouteElement element={
+              location.state?.background ? <OrdersHistory /> : <OrderDetails />
+            } />
           } />
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -111,7 +113,7 @@ const App: React.FC = () => {
             <Route
               path="/profile/orders/:number"
               element={
-                <Modal title="Детали заказа" onClose={handleModalClose}>
+                <Modal title="Детали заказа" onClose={() => navigate('/profile/orders')}>
                   <OrderDetails />
                 </Modal>
               }

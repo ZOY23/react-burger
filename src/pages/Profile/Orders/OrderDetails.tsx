@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../services/store/hooks';
-import { selectOrderByNumber, selectCurrentOrder } from '../../../services/selectors/ordersSelectors';
+import { selectOrderByNumber } from '../../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../../services/selectors/ingredientsSelectors';
 import { CurrencyIcon, FormattedDate } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './OrderDetails.module.css';
@@ -15,30 +15,20 @@ export const OrderDetails: React.FC = () => {
   const location = useLocation();
   const orderNumber = number ? parseInt(number) : 0;
   const order = useAppSelector(state => selectOrderByNumber(state, orderNumber));
-  const currentOrder = useAppSelector(selectCurrentOrder);
   const ingredients = useAppSelector(selectIngredients);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (orderNumber && (!order || order.number !== orderNumber)) {
+    if (orderNumber) {
       dispatch(fetchOrderByNumber(orderNumber));
     }
+  }, [dispatch, orderNumber]);
 
-    if (!location.state?.background) {
-      navigate('/profile/orders', {
-        state: { background: location, orderNumber },
-        replace: true
-      });
-    }
-  }, [dispatch, order, orderNumber, navigate, location]);
-
-  const orderToDisplay = order || currentOrder;
-
-  if (!orderToDisplay || !ingredients.length) {
+  if (!order || !ingredients.length) {
     return <Loader />;
   }
 
-  const orderIngredients = orderToDisplay.ingredients
+  const orderIngredients = order.ingredients
     .map(id => ingredients.find(ing => ing._id === id))
     .filter(Boolean) as IIngredient[];
 
@@ -49,12 +39,12 @@ export const OrderDetails: React.FC = () => {
     done: 'Выполнен',
     pending: 'Готовится',
     created: 'Создан',
-  }[orderToDisplay.status];
+  }[order.status];
 
   return (
     <div className={styles.container}>
-      <span className={`text text_type_digits-default ${styles.number}`}>#{orderToDisplay.number}</span>
-      <h2 className="text text_type_main-medium mt-10">{orderToDisplay.name}</h2>
+      <span className={`text text_type_digits-default ${styles.number}`}>#{order.number}</span>
+      <h2 className="text text_type_main-medium mt-10">{order.name}</h2>
       <p className={`text text_type_main-default mt-3 ${styles.status}`}>
         {statusText}
       </p>
@@ -90,7 +80,7 @@ export const OrderDetails: React.FC = () => {
       
       <div className={styles.footer}>
         <span className="text text_type_main-default text_color_inactive">
-          <FormattedDate date={new Date(orderToDisplay.createdAt)} />
+          <FormattedDate date={new Date(order.createdAt)} />
         </span>
         <div className={styles.totalPrice}>
           <span className="text text_type_digits-default mr-2">{totalPrice}</span>
