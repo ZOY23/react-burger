@@ -26,11 +26,15 @@ export const OrderCard: React.FC<OrderCardProps> = ({
     .map(id => ingredientsData.find(ing => ing._id === id))
     .filter(Boolean) as IIngredient[];
 
-  const totalPrice = orderIngredients.reduce((sum, item) => sum + item.price, 0);
+  const totalPrice = orderIngredients.reduce((sum, item) => sum + (item?.price || 0), 0);
 
   const uniqueIngredients = Array.from(new Set(orderIngredients));
   const visibleIngredients = uniqueIngredients.slice(0, 6);
   const hiddenCount = uniqueIngredients.length > 6 ? uniqueIngredients.length - 6 : 0;
+
+  if (!ingredientsData.length) {
+    return null;
+  }
 
   return (
     <div 

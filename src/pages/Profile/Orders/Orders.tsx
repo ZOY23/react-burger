@@ -17,21 +17,29 @@ import {
 import styles from './Orders.module.css';
 import { IOrder, IIngredient } from '../../../utils/types';
 import { Modal } from '../../../components/modal/modal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Loader from '../../../components/loader/loader';
 import { ProfileOrderDetails } from '../../../components/order-info/ProfileOrderDetails';
-
+import ProtectedRouteElement from '../../../components/ProtectedRouteElement/ProtectedRouteElement';
 
 export const Orders: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { number } = useParams<{ number?: string }>();
   const orders = useAppSelector(selectUserOrders);
   const wsConnected = useAppSelector(selectWsConnected);
   const wsError = useAppSelector(selectWsError);
   const currentOrderNumber = useAppSelector(selectCurrentOrderNumber);
   const ingredients = useAppSelector(state => state.ingredients.items);
   const currentOrder = useAppSelector(state => selectOrderByNumber(state, currentOrderNumber || 0));
+
+  useEffect(() => {
+    if (number) {
+      const orderNum = parseInt(number);
+      dispatch(setCurrentOrderNumber(orderNum));
+    }
+  }, [number, dispatch]);
 
   const handleOrderClick = (orderNumber: number) => {
     dispatch(setCurrentOrderNumber(orderNumber));
@@ -49,12 +57,6 @@ export const Orders: React.FC = () => {
       dispatch(disconnect());
     };
   }, [dispatch]);
-
-  useEffect(() => {
-    if (currentOrderNumber && location.pathname === '/profile/orders') {
-      navigate(`/profile/orders/${currentOrderNumber}`, { state: { background: location } });
-    }
-  }, [currentOrderNumber, navigate, location]);
 
   if (!wsConnected && !wsError) {
     return <Loader />;
@@ -104,11 +106,21 @@ export const Orders: React.FC = () => {
         )}
       </div>
 
-      {location.state?.background && orderWithIngredients && (
-        <Modal title="Детали заказа" onClose={() => navigate('/profile/orders')}>
+      {(location.state?.background || number) && orderWithIngredients && (
+        <Modal 
+          title="Детали заказа" 
+          onClose={() => {
+            dispatch(setCurrentOrderNumber(null));
+            navigate('/profile/orders');
+          }}
+        >
           <ProfileOrderDetails order={orderWithIngredients} />
         </Modal>
       )}
     </div>
   );
 };
+
+export const ProtectedOrders = () => (
+  <ProtectedRouteElement element={<Orders />} />
+);

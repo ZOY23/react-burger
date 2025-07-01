@@ -2,25 +2,42 @@ import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../services/store/hooks';
 import { OrderCard } from '../../../components/order-card/OrderCard';
 import styles from './OrdersHistory.module.css';
-import { fetchUserOrders } from '../../../services/slices/orderSlice';
+import { fetchUserOrders, setCurrentOrderNumber } from '../../../services/slices/orderSlice';
 import { selectUserOrders } from '../../../services/selectors/ordersSelectors';
-import { selectIngredients } from '../../../services/selectors/ingredientsSelectors';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { selectIngredients, selectIngredientsLoading } from '../../../services/selectors/ingredientsSelectors';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import Loader from '../../../components/loader/loader';
+import { IOrder } from '../../../utils/types';
+import { Modal } from '../../../components/modal/modal';
+import { OrderDetails } from './OrderDetails';
 
 export const OrdersHistory: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { number } = useParams<{ number?: string }>();
   const orders = useAppSelector(selectUserOrders);
   const ingredients = useAppSelector(selectIngredients);
+  const ingredientsLoading = useAppSelector(selectIngredientsLoading);
 
   useEffect(() => {
     dispatch(fetchUserOrders());
-  }, [dispatch]);
+    if (number) {
+      dispatch(setCurrentOrderNumber(parseInt(number)));
+    }
+  }, [dispatch, number]);
 
-  const handleOrderClick = (order: any) => {
+  const handleOrderClick = (order: IOrder) => {
     navigate(`/profile/orders/${order.number}`, { state: { background: location } });
   };
+
+  const handleModalClose = () => {
+    navigate('/profile/orders', { replace: true });
+  };
+
+  if (ingredientsLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className={styles.container}>
@@ -33,7 +50,7 @@ export const OrdersHistory: React.FC = () => {
               order={order}
               ingredientsData={ingredients}
               showStatus={true}
-              onClick={handleOrderClick}
+              onClick={() => handleOrderClick(order)}
             />
           ))
         ) : (
@@ -42,6 +59,15 @@ export const OrdersHistory: React.FC = () => {
           </p>
         )}
       </div>
+
+      {(location.state?.background || number) && (
+        <Modal 
+          title="Детали заказа" 
+          onClose={handleModalClose}
+        >
+          <OrderDetails />
+        </Modal>
+      )}
     </div>
   );
 };

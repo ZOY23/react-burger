@@ -20,8 +20,9 @@ import { forceLogout } from './services/slices/authSlice';
 import { IIngredient } from './utils/types';
 import { Feed } from './pages/Feed/Feed';
 import { FeedOrderDetails } from './pages/Feed/FeedOrderDetails';
-import { OrderDetails as ProfileOrderDetails } from './pages/Profile/Orders/OrderDetails';
+import { OrderDetails } from './pages/Profile/Orders/OrderDetails';
 import { clearCurrentOrder } from './services/slices/orderSlice';
+import { fetchIngredients } from './services/slices/ingredientsSlice';
 
 interface LocationState {
   background?: Location;
@@ -36,6 +37,8 @@ const App: React.FC = () => {
   const currentIngredient = useAppSelector(state => state.ingredients.currentIngredient);
 
   useEffect(() => {
+    dispatch(fetchIngredients());
+
     const handleUnauthorized = (event: CustomEvent) => {
       if (event.detail?.message === 'jwt expired' || event.detail?.message === 'No tokens available') {
         dispatch(forceLogout());
@@ -51,7 +54,7 @@ const App: React.FC = () => {
 
   const handleModalClose = () => {
     dispatch(clearCurrentOrder());
-    navigate(-1);
+    navigate('/profile/orders', { replace: true });
   };
 
   return (
@@ -60,9 +63,6 @@ const App: React.FC = () => {
       <main className={styles.main}>
         <Routes location={background || location}>
           <Route path="/" element={<Home />} />
-          <Route path="/profile/orders/:number" element={
-  <ProtectedRouteElement element={<ProfileOrderDetails />} />
-} />
           <Route path="/login" element={
             <ProtectedRouteElement element={<Login />} onlyUnAuth />
           } />
@@ -85,7 +85,7 @@ const App: React.FC = () => {
           <Route path="/feed" element={<Feed />} />
           <Route path="/feed/:number" element={<FeedOrderDetails />} />
           <Route path="/profile/orders/:number" element={
-            <ProtectedRouteElement element={<ProfileOrderDetails />} />
+            <ProtectedRouteElement element={<OrderDetails />} />
           } />
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -101,14 +101,6 @@ const App: React.FC = () => {
               }
             />
             <Route
-  path="/profile/orders/:number"
-  element={
-    <Modal title="Детали заказа" onClose={handleModalClose}>
-      <ProfileOrderDetails />
-    </Modal>
-  }
-/>
-            <Route
               path="/feed/:number"
               element={
                 <Modal title="Детали заказа" onClose={handleModalClose}>
@@ -120,7 +112,7 @@ const App: React.FC = () => {
               path="/profile/orders/:number"
               element={
                 <Modal title="Детали заказа" onClose={handleModalClose}>
-                  <ProfileOrderDetails />
+                  <OrderDetails />
                 </Modal>
               }
             />

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../services/store/hooks';
 import { selectOrderByNumber, selectCurrentOrder } from '../../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../../services/selectors/ingredientsSelectors';
@@ -7,9 +7,12 @@ import { CurrencyIcon, FormattedDate } from '@ya.praktikum/react-developer-burge
 import styles from './OrderDetails.module.css';
 import { IIngredient } from '../../../utils/types';
 import { fetchOrderByNumber } from '../../../services/slices/orderSlice';
+import Loader from '../../../components/loader/loader';
 
 export const OrderDetails: React.FC = () => {
   const { number } = useParams<{ number: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const orderNumber = number ? parseInt(number) : 0;
   const order = useAppSelector(state => selectOrderByNumber(state, orderNumber));
   const currentOrder = useAppSelector(selectCurrentOrder);
@@ -17,15 +20,22 @@ export const OrderDetails: React.FC = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!order && orderNumber) {
+    if (orderNumber && (!order || order.number !== orderNumber)) {
       dispatch(fetchOrderByNumber(orderNumber));
     }
-  }, [dispatch, order, orderNumber]);
+
+    if (!location.state?.background) {
+      navigate('/profile/orders', {
+        state: { background: location, orderNumber },
+        replace: true
+      });
+    }
+  }, [dispatch, order, orderNumber, navigate, location]);
 
   const orderToDisplay = order || currentOrder;
 
-  if (!orderToDisplay) {
-    return <div className={styles.notFound}>Загрузка заказа...</div>;
+  if (!orderToDisplay || !ingredients.length) {
+    return <Loader />;
   }
 
   const orderIngredients = orderToDisplay.ingredients
