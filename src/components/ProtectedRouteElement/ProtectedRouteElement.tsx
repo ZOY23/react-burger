@@ -42,7 +42,7 @@ const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
     return <Navigate to={from} replace />;
   }
 
-  if (!onlyUnAuth && !isAuth) {
+  if (!onlyUnAuth && !isAuth && !refreshToken) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
