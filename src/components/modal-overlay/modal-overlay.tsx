@@ -5,5 +5,5 @@ interface ModalOverlayProps {
 }
 
 export const ModalOverlay: React.FC<ModalOverlayProps> = ({ onClose }) => {
-  return <div className={styles.overlay} onClick={onClose} />;
+  return <div className={styles.overlay} onClick={onClose} data-testid="modal-overlay" />;
 };

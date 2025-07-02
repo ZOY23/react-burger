@@ -1,7 +1,6 @@
-// App.tsx
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { AppHeader } from './components/app-header/';
+import { AppHeader } from './components/app-header';
 import styles from './App.module.css';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -14,23 +13,36 @@ import Home from './pages/Home';
 import IngredientDetails from './pages/IngredientDetails';
 import NotFound from './pages/NotFound';
 import { Modal } from './components/modal/modal';
-import { OrdersHistory } from './pages/Profile/OrdersHistory';
+import { OrdersHistory } from './pages/Profile/Orders/OrdersHistory';
 import { useAppDispatch, useAppSelector } from './services/store/hooks';
 import { IngredientDetails as IngredientDetailsComponent } from './components/ingredient-details/ingredient-details';
 import { forceLogout } from './services/slices/authSlice';
+import { IIngredient } from './utils/types';
+import { Feed } from './pages/Feed/Feed';
+import { FeedOrderDetails } from './pages/Feed/FeedOrderDetails';
+import { OrderDetails } from './pages/Profile/Orders/OrderDetails';
+import { clearCurrentOrder } from './services/slices/orderSlice';
+import { fetchIngredients } from './services/slices/ingredientsSlice';
 
-function App() {
+interface LocationState {
+  background?: Location;
+  from?: string;
+}
+
+const App: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const background = location.state?.background;
+  const background = (location.state as LocationState)?.background;
   const currentIngredient = useAppSelector(state => state.ingredients.currentIngredient);
 
   useEffect(() => {
+    dispatch(fetchIngredients());
+
     const handleUnauthorized = (event: CustomEvent) => {
       if (event.detail?.message === 'jwt expired' || event.detail?.message === 'No tokens available') {
         dispatch(forceLogout());
-        navigate('/login', { state: { from: location } });
+        navigate('/login', { state: { from: location.pathname } });
       }
     };
 
@@ -41,11 +53,12 @@ function App() {
   }, [dispatch, navigate, location]);
 
   const handleModalClose = () => {
-    navigate(-1);
+    dispatch(clearCurrentOrder());
+    navigate(-1); // Изменено: возврат на предыдущий маршрут вместо жесткого перехода
   };
 
   return (
-    <div className="App">
+    <div className={styles.app}>
       <AppHeader />
       <main className={styles.main}>
         <Routes location={background || location}>
@@ -69,6 +82,13 @@ function App() {
             <Route path="orders" element={<OrdersHistory />} />
           </Route>
           <Route path="/ingredients/:id" element={<IngredientDetails />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/feed/:number" element={<FeedOrderDetails />} />
+          <Route path="/profile/orders/:number" element={
+            <ProtectedRouteElement element={
+              location.state?.background ? <OrdersHistory /> : <OrderDetails />
+            } />
+          } />
           <Route path="*" element={<NotFound />} />
         </Routes>
 
@@ -82,11 +102,27 @@ function App() {
                 </Modal>
               }
             />
+            <Route
+              path="/feed/:number"
+              element={
+                <Modal title="Детали заказа" onClose={handleModalClose}>
+                  <FeedOrderDetails />
+                </Modal>
+              }
+            />
+            <Route
+              path="/profile/orders/:number"
+              element={
+                <Modal title="Детали заказа" onClose={() => navigate('/profile/orders')}>
+                  <OrderDetails />
+                </Modal>
+              }
+            />
           </Routes>
         )}
       </main>
     </div>
   );
-}
+};
 
 export default App;

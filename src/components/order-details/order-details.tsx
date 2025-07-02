@@ -3,7 +3,7 @@ import { CheckMarkIcon } from '@ya.praktikum/react-developer-burger-ui-component
 import styles from './OrderDetails.module.css';
 
 interface OrderDetailsProps {
-  orderNumber: number;
+  orderNumber: number | null;
   isLoading?: boolean;
   error?: string | null;
 }
@@ -15,7 +15,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="order-details-loading">
         <p className="text text_type_main-medium">Загрузка...</p>
       </div>
     );
@@ -23,7 +23,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
 
   if (error) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="order-details-error">
         <p className={`text text_type_main-default ${styles.error}`}>
           Ошибка: {error}
         </p>
@@ -31,8 +31,16 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
     );
   }
 
+  if (!orderNumber) {
+    return (
+      <div className={styles.container}>
+        <p className="text text_type_main-default">Номер заказа не получен</p>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid="order-details">
       <p className={`text text_type_digits-large ${styles.orderNumber}`}>
         {orderNumber.toString().padStart(6, '0')}
       </p>

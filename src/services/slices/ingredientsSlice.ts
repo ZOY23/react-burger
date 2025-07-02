@@ -1,6 +1,7 @@
-// services/slices/ingredientsSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+// ingredientsSlice.ts
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { IIngredient } from '../../utils/types';
+import { request } from '../../utils/api';
 
 interface IngredientsState {
   items: IIngredient[];
@@ -16,22 +17,22 @@ const initialState: IngredientsState = {
   currentIngredient: null,
 };
 
+export const fetchIngredients = createAsyncThunk(
+  'ingredients/fetchAll',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await request('/ingredients');
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const ingredientsSlice = createSlice({
   name: 'ingredients',
   initialState,
   reducers: {
-    fetchIngredientsStart(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    fetchIngredientsSuccess(state, action: PayloadAction<IIngredient[]>) {
-      state.items = action.payload;
-      state.loading = false;
-    },
-    fetchIngredientsFailure(state, action: PayloadAction<string>) {
-      state.error = action.payload;
-      state.loading = false;
-    },
     setCurrentIngredient(state, action: PayloadAction<IIngredient>) {
       state.currentIngredient = action.payload;
     },
@@ -39,14 +40,22 @@ const ingredientsSlice = createSlice({
       state.currentIngredient = null;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchIngredients.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchIngredients.fulfilled, (state, action: PayloadAction<IIngredient[]>) => {
+        state.items = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchIngredients.rejected, (state, action: PayloadAction<any>) => {
+        state.error = action.payload;
+        state.loading = false;
+      });
+  },
 });
 
-export const {
-  fetchIngredientsStart,
-  fetchIngredientsSuccess,
-  fetchIngredientsFailure,
-  setCurrentIngredient,
-  clearCurrentIngredient,
-} = ingredientsSlice.actions;
-
+export const { setCurrentIngredient, clearCurrentIngredient } = ingredientsSlice.actions;
 export default ingredientsSlice.reducer;

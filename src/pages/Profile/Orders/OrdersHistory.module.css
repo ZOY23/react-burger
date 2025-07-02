@@ -1,0 +1,27 @@
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Стили для скроллбара */
+.ordersList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ordersList::-webkit-scrollbar-track {
+  background: #2F2F37;
+}
+
+.ordersList::-webkit-scrollbar-thumb {
+  background: #8585AD;
+}

@@ -1,60 +1,98 @@
-// src/pages/ResetPassword/ResetPassword.tsx
-import React, { useState } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './ResetPassword.module.css';
+import { resetPassword } from '../../services/actions/authActions';
+import { useAppDispatch } from '../../services/store/hooks';
 
-const ResetPassword = () => {
-  const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
+const ResetPassword: React.FC = () => {
+  const [form, setForm] = useState({
+    password: '',
+    token: ''
+  });
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: value
+    });
+    setError('');
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://norma.nomoreparties.space/api/password-reset/reset', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password, token }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const result = await dispatch(resetPassword(form)).unwrap();
+      if (result.success) {
         setMessage('Пароль успешно изменен');
-        localStorage.removeItem('fromForgotPassword');
+        localStorage.removeItem('resetPasswordVisited');
         navigate('/login');
-      } else {
-        setMessage('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
       }
-    } catch (error) {
-      setMessage('Ошибка сети');
+    } catch (err: any) {
+      setError(err.message || 'Неизвестная ошибка');
     }
   };
 
   return (
     <div className={styles.container}>
-      <h1>Восстановление пароля</h1>
+      <h1 className={`${styles.title} text text_type_main-medium`}>Восстановление пароля</h1>
+      {error && (
+        <p className={`${styles.error} text text_type_main-default`}>
+          {error}
+        </p>
+      )}
+      {message && (
+        <p className={`${styles.message} text text_type_main-default`}>
+          {message}
+        </p>
+      )}
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input
+        <Input
           type="password"
           placeholder="Введите новый пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={form.password}
+          onChange={handleChange}
+          name="password"
+          size="default"
+          extraClass="mb-6"
           required
+          onPointerEnterCapture={undefined}
+          onPointerLeaveCapture={undefined}
         />
-        <input
+        <Input
           type="text"
           placeholder="Введите код из письма"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
+          value={form.token}
+          onChange={handleChange}
+          name="token"
+          size="default"
+          extraClass="mb-6"
           required
+          onPointerEnterCapture={undefined}
+          onPointerLeaveCapture={undefined}
         />
-        {message && <p className={styles.message}>{message}</p>}
-        <button type="submit">Сохранить</button>
+        <Button
+          htmlType="submit"
+          type="primary"
+          size="medium"
+          extraClass="mb-20"
+          disabled={!form.password || !form.token}
+        >
+          Сохранить
+        </Button>
       </form>
       <div className={styles.links}>
-        <p>Вспомнили пароль? <Link to="/login">Войти</Link></p>
+        <p className={`${styles.text} text text_type_main-default`}>
+          Вспомнили пароль?{' '}
+          <Link to="/login" className={styles.link}>
+            Войти
+          </Link>
+        </p>
       </div>
     </div>
   );

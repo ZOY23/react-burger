@@ -1,17 +1,26 @@
 import { useOutletContext } from 'react-router-dom';
 import { IUser } from '../../utils/types';
 import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import styles from './Profile.module.css';
+import { useAppDispatch } from '../../services/store/hooks';
+import { updateUser } from '../../services/actions/authActions';
 
-export const ProfileInfo = () => {
-  const user = useOutletContext<IUser>();
-  const [formData, setFormData] = useState({
+interface ProfileFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export const ProfileInfo: React.FC = () => {
+  const user = useOutletContext<IUser | undefined>();
+  const [formData, setFormData] = useState<ProfileFormData>({
     name: user?.name || '',
     email: user?.email || '',
     password: '********'
   });
   const [isEditing, setIsEditing] = useState(false);
+  const dispatch = useAppDispatch();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,9 +30,29 @@ export const ProfileInfo = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setIsEditing(false);
+    if (!user) return;
+    
+    const updatedData: { name: string; email: string; password?: string } = {
+      name: formData.name,
+      email: formData.email
+    };
+    
+    if (formData.password !== '********') {
+      updatedData.password = formData.password;
+    }
+
+    dispatch(updateUser(updatedData))
+      .unwrap()
+      .then(() => {
+        setIsEditing(false);
+        setFormData({
+          ...formData,
+          password: '********'
+        });
+      })
+      .catch(() => {});
   };
 
   const handleCancel = () => {
@@ -33,6 +62,10 @@ export const ProfileInfo = () => {
       password: '********'
     });
     setIsEditing(false);
+  };
+
+  const handleIconClick = () => {
+    setIsEditing(!isEditing);
   };
 
   return (
@@ -45,10 +78,13 @@ export const ProfileInfo = () => {
           value={formData.name}
           name="name"
           icon={isEditing ? 'CloseIcon' : 'EditIcon'}
-          onIconClick={() => setIsEditing(!isEditing)}
+          onIconClick={handleIconClick}
           disabled={!isEditing}
           onPointerEnterCapture={undefined}
           onPointerLeaveCapture={undefined}
+          error={false}
+          errorText=""
+          size="default"
         />
       </div>
       <div className="mb-6">
@@ -59,24 +95,30 @@ export const ProfileInfo = () => {
           value={formData.email}
           name="email"
           icon={isEditing ? 'CloseIcon' : 'EditIcon'}
-          onIconClick={() => setIsEditing(!isEditing)}
+          onIconClick={handleIconClick}
           disabled={!isEditing}
           onPointerEnterCapture={undefined}
           onPointerLeaveCapture={undefined}
+          error={false}
+          errorText=""
+          size="default"
         />
       </div>
       <div className="mb-6">
         <Input
-          type="password"
+          type={isEditing ? "text" : "password"}
           placeholder="Пароль"
           onChange={handleChange}
           value={formData.password}
           name="password"
           icon={isEditing ? 'CloseIcon' : 'EditIcon'}
-          onIconClick={() => setIsEditing(!isEditing)}
+          onIconClick={handleIconClick}
           disabled={!isEditing}
           onPointerEnterCapture={undefined}
           onPointerLeaveCapture={undefined}
+          error={false}
+          errorText=""
+          size="default"
         />
       </div>
 
@@ -94,6 +136,7 @@ export const ProfileInfo = () => {
             type="primary" 
             size="medium"
             htmlType="submit"
+            disabled={!formData.name || !formData.email || !formData.password}
           >
             Сохранить
           </Button>

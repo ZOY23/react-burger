@@ -9,7 +9,6 @@ export const AppHeader = () => {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        {/* Левый блок - Конструктор и Лента заказов */}
         <div className={styles.leftSection}>
           <NavLink 
             to="/" 
@@ -32,14 +31,12 @@ export const AppHeader = () => {
           </NavLink>
         </div>
 
-        {/* Центр - Логотип */}
         <div className={styles.logo}>
           <NavLink to="/">
             <Logo />
           </NavLink>
         </div>
 
-        {/* Правый блок - Личный кабинет */}
         <NavLink 
           to="/profile" 
           className={({ isActive }) => 

@@ -1,12 +1,17 @@
-import React, { ChangeEvent, FormEvent } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Input, Button } from '@ya.praktikum/react-developer-burger-ui-components';
 import styles from './Login.module.css';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { loginUser } from '../../services/actions/authActions';
 
-const Login = () => {
-  const [form, setForm] = React.useState({
+interface LoginForm {
+  email: string;
+  password: string;
+}
+
+const Login: React.FC = () => {
+  const [form, setForm] = React.useState<LoginForm>({
     email: '',
     password: ''
   });
@@ -16,14 +21,14 @@ const Login = () => {
   const { error, isLoading } = useAppSelector(state => state.auth);
   const from = location.state?.from || '/';
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(loginUser(form))
       .unwrap()
@@ -34,10 +39,10 @@ const Login = () => {
   };
 
   const inputProps = {
-    onPointerEnterCapture: () => {},
-    onPointerLeaveCapture: () => {},
+    onPointerEnterCapture: undefined,
+    onPointerLeaveCapture: undefined,
     error: !!error,
-    errorText: error || 'Ошибка',
+    errorText: error || '',
     size: 'default' as const,
     extraClass: 'mb-6'
   };
@@ -53,6 +58,7 @@ const Login = () => {
           onChange={handleChange}
           name="email"
           {...inputProps}
+          required
         />
         <Input
           type="password"
@@ -61,13 +67,14 @@ const Login = () => {
           onChange={handleChange}
           name="password"
           {...inputProps}
+          required
         />
         <Button
           htmlType="submit"
           type="primary"
           size="medium"
           extraClass="mb-20"
-          disabled={isLoading}
+          disabled={isLoading || !form.email || !form.password}
         >
           {isLoading ? 'Загрузка...' : 'Войти'}
         </Button>

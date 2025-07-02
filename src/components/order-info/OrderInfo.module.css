@@ -1,0 +1,100 @@
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.number {
+  text-align: center;
+}
+
+.title {
+  text-align: center;
+}
+
+.status {
+  color: #00CCCC;
+  text-align: center;
+}
+
+.ingredients {
+  max-height: 312px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ingredient {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ingredientInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.imageContainer {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(#801AB2, #4C4CFF);
+  padding: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #131316;
+}
+
+.name {
+  max-width: 320px;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.totalPrice {
+  display: flex;
+  align-items: center;
+}
+
+.done {
+  color: #00CCCC;
+}
+
+.notFound {
+  text-align: center;
+  margin-top: 100px;
+  font-size: 24px;
+}
+
+/* Стили для скроллбара */
+.ingredients::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ingredients::-webkit-scrollbar-track {
+  background: #2F2F37;
+}
+
+.ingredients::-webkit-scrollbar-thumb {
+  background: #8585AD;
+}

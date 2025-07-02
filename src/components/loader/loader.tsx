@@ -1,4 +1,3 @@
-// src/components/loader/Loader.tsx
 import React from 'react';
 import styles from './Loader.module.css';
 

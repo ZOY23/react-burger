@@ -1,8 +1,10 @@
-// Типы для ингредиентов
+// src/utils/types.ts
+export type TIngredientType = 'bun' | 'sauce' | 'main';
+
 export interface IIngredient {
   _id: string;
   name: string;
-  type: 'bun' | 'sauce' | 'main';
+  type: TIngredientType;
   proteins: number;
   fat: number;
   carbohydrates: number;
@@ -12,11 +14,33 @@ export interface IIngredient {
   image_mobile: string;
   image_large: string;
   __v: number;
-  uuid?: string;
   uniqueId?: string;
 }
 
-// Типы для заказов
+export type TOrderStatus = 'created' | 'pending' | 'done';
+
+export interface IOrder {
+  _id: string;
+  ingredients: string[];
+  status: TOrderStatus;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  number: number;
+}
+
+export interface IOrderWithIngredients extends Omit<IOrder, 'ingredients'> {
+  ingredients: IIngredient[];
+  totalPrice: number;
+}
+
+export interface IOrdersResponse {
+  success: boolean;
+  orders: IOrder[];
+  total: number;
+  totalToday: number;
+}
+
 export interface IOrderResponse {
   name: string;
   order: {
@@ -25,106 +49,102 @@ export interface IOrderResponse {
   success: boolean;
 }
 
-export interface IOrderDetails {
-  orderNumber: number | null;
-  loading: boolean;
-  error: string | null;
-}
-
-// Типы для авторизации
 export interface IUser {
   email: string;
   name: string;
 }
 
-export interface IAuthResponse {
+export interface IApiResponse<T = any> {
   success: boolean;
+  data?: T;
+  message?: string;
+  [key: string]: any;
+}
+
+export interface ITokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface IAuthResponse extends IApiResponse {
   user: IUser;
   accessToken: string;
   refreshToken: string;
 }
 
-export interface ITokenResponse {
-  success: boolean;
-  accessToken: string;
-  refreshToken: string;
+export interface ICookieOptions {
+  expires?: number | Date | string;
+  [key: string]: any;
 }
 
-export interface ILogoutResponse {
-  success: boolean;
-  message: string;
+export interface IConstructorState {
+  bun: IIngredient | null;
+  ingredients: IIngredient[];
+  orderNumber: number | null;
+  orderLoading: boolean;
+  orderError: string | null;
 }
 
-export interface IAuthState {
-  user: IUser | null;
-  isAuth: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
-// Типы для конструктора бургера
-export interface IngredientsState {
+export interface IIngredientsState {
   items: IIngredient[];
   loading: boolean;
   error: string | null;
   currentIngredient: IIngredient | null;
 }
 
-// Типы для списка ингредиентов
-export interface IngredientsState {
-  items: IIngredient[];
-  loading: boolean;
+export interface IAuthState {
+  isAuth: boolean;
+  user: IUser | null;
+  isLoading: boolean;
   error: string | null;
 }
 
-// Общий тип состояния хранилища
-export interface IRootState {
-  ingredients: IngredientsState;
-  burgerConstructor: ConstructorState;
+export interface IOrdersState {
+  feed: IOrder[];
+  userOrders: IOrder[];
+  loading: boolean;
+  error: string | null;
+  total: number;
+  totalToday: number;
+  currentOrder: IOrder | null;
+  wsConnected: boolean;
+}
+
+export interface RootState {
   auth: IAuthState;
-  orderDetails: IOrderDetails;
+  ingredients: IIngredientsState;
+  burgerConstructor: IConstructorState;
+  orders: IOrdersState;
 }
 
-// Типы для форм
-export interface ILoginForm {
+export interface ForgotPasswordData {
   email: string;
-  password: string;
 }
 
-export interface IRegisterForm extends ILoginForm {
-  name: string;
-}
-
-export interface IResetPasswordForm {
+export interface ResetPasswordData {
   password: string;
   token: string;
 }
 
-export interface IForgotPasswordForm {
-  email: string;
+// Добавляем типы для WebSocket
+export interface SocketAction {
+  type: 'orders/connect' | 'orders/disconnect';
+  payload?: string;
 }
 
-// utils/types.ts
-export interface IIngredient {
-  _id: string;
-  name: string;
-  type: 'bun' | 'sauce' | 'main';
-  proteins: number;
-  fat: number;
-  carbohydrates: number;
-  calories: number;
-  price: number;
-  image: string;
-  image_mobile: string;
-  image_large: string;
-  __v: number;
-  uniqueId?: string;
+export interface IOrdersState {
+  feed: IOrder[];
+  userOrders: IOrder[];
+  loading: boolean;
+  error: string | null;
+  total: number;
+  totalToday: number;
+  currentOrder: IOrder | null;
+  wsConnected: boolean;
+  wsError: string | null; // Добавлено это поле
 }
 
-export interface ConstructorState {
-  bun: IIngredient | null;
+export interface IOrderWithIngredients extends Omit<IOrder, 'ingredients'> {
   ingredients: IIngredient[];
-  orderNumber: number | null;
-  orderLoading: boolean;
-  orderError: string | null;
+  totalPrice: number;
 }
