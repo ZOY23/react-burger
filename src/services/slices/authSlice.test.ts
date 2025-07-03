@@ -82,6 +82,21 @@ describe('auth reducer', () => {
     });
   });
 
+  it('should handle loginUser.fulfilled', () => {
+    const user = { email: 'test@test.com', name: 'Test User' };
+    const action = { 
+      type: loginUser.fulfilled.type, 
+      payload: { user, accessToken: 'token', refreshToken: 'refresh' } 
+    };
+    const state = authReducer(initialState, action);
+    expect(state).toEqual({
+      ...initialState,
+      isAuth: true,
+      isLoading: false,
+      user
+    });
+  });
+
   it('should handle logoutUser.fulfilled', () => {
     const state = { 
       ...initialState, 
@@ -92,12 +107,43 @@ describe('auth reducer', () => {
     expect(authReducer(state, action)).toEqual(initialState);
   });
 
-  it('should handle checkUserAuth.rejected with no tokens', () => {
+  it('should handle checkUserAuth.pending', () => {
+    const action = { type: checkUserAuth.pending.type };
+    const state = authReducer(initialState, action);
+    expect(state).toEqual({
+      ...initialState,
+      isLoading: true,
+      error: null
+    });
+  });
+
+  it('should handle checkUserAuth.fulfilled', () => {
+    const user = { email: 'test@test.com', name: 'Test User' };
+    const action = { 
+      type: checkUserAuth.fulfilled.type, 
+      payload: { user } 
+    };
+    const state = authReducer(initialState, action);
+    expect(state).toEqual({
+      ...initialState,
+      isAuth: true,
+      isLoading: false,
+      user
+    });
+  });
+
+  it('should handle checkUserAuth.rejected', () => {
+    const error = 'No tokens available';
     const action = { 
       type: checkUserAuth.rejected.type, 
-      payload: 'No tokens available' 
+      payload: error 
     };
-    expect(authReducer(initialState, action)).toEqual(initialState);
+    const state = authReducer(initialState, action);
+    expect(state).toEqual({
+      ...initialState,
+      isLoading: false,
+      error
+    });
   });
 
   it('should handle updateUser.fulfilled', () => {
