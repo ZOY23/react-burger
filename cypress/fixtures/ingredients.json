@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "1",
+    "name": "Test Bun",
+    "type": "bun",
+    "price": 100,
+    "image": "image.jpg",
+    "__v": 0
+  },
+  {
+    "_id": "2",
+    "name": "Test Ingredient",
+    "type": "main",
+    "price": 50,
+    "image": "image.jpg",
+    "__v": 0
+  }
+]
