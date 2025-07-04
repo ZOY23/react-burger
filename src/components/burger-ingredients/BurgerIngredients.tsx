@@ -24,7 +24,6 @@ export const BurgerIngredients = () => {
     main: null
   });
 
-  // Получаем данные из хранилища
   const { 
     items: ingredients, 
     loading, 
@@ -36,14 +35,12 @@ export const BurgerIngredients = () => {
     ingredients: constructorIngredients 
   } = useAppSelector(state => state.burgerConstructor);
 
-  // Загружаем ингредиенты при монтировании компонента
   useEffect(() => {
     if (ingredients.length === 0 && !loading) {
       dispatch(fetchIngredients());
     }
   }, [dispatch, ingredients.length, loading]);
 
-  // Обработчик скролла для табов
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -77,14 +74,12 @@ export const BurgerIngredients = () => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [currentTab]);
 
-  // Группируем ингредиенты по типам
   const ingredientsByType = {
     bun: ingredients.filter((item: IIngredient) => item.type === 'bun'),
     sauce: ingredients.filter((item: IIngredient) => item.type === 'sauce'),
     main: ingredients.filter((item: IIngredient) => item.type === 'main')
   };
 
-  // Обработчик клика по табу
   const handleTabClick = (tab: 'bun' | 'sauce' | 'main') => {
     setCurrentTab(tab);
     const section = sectionsRef.current[tab];
@@ -93,13 +88,11 @@ export const BurgerIngredients = () => {
     }
   };
 
-  // Обработчик клика по ингредиенту
   const handleIngredientClick = (ingredient: IIngredient) => {
     dispatch(setCurrentIngredient(ingredient));
     navigate(`/ingredients/${ingredient._id}`, { state: { background: location } });
   };
 
-  // Подсчет количества ингредиентов в конструкторе
   const getCount = (ingredient: IIngredient): number => {
     if (ingredient.type === 'bun') {
       return constructorBun && constructorBun._id === ingredient._id ? 2 : 0;
@@ -107,7 +100,6 @@ export const BurgerIngredients = () => {
     return constructorIngredients.filter((item: IIngredient) => item._id === ingredient._id).length;
   };
 
-  // Состояния загрузки и ошибки
   if (loading && ingredients.length === 0) {
     return <div className={styles.loading}>Загрузка ингредиентов...</div>;
   }
@@ -117,8 +109,10 @@ export const BurgerIngredients = () => {
   }
 
   return (
-    <section className={styles.section}>
-      <h1 className="text text_type_main-large mb-5">Соберите бургер</h1>
+    <section className={styles.section} data-testid="burger-ingredients-section">
+      <h1 className="text text_type_main-large mb-5" data-testid="burger-constructor-title">
+        Соберите бургер
+      </h1>
       
       <div className={`${styles.tabs} mb-10`}>
         <Tab 
@@ -175,7 +169,6 @@ export const BurgerIngredients = () => {
   );
 };
 
-// Компонент карточки ингредиента
 interface IngredientCardProps {
   ingredient: IIngredient;
   count: number;

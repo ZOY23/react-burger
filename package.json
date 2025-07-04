@@ -30,12 +30,28 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --browser chrome --config pageLoadTimeout=60000,defaultCommandTimeout=10000",
+    "test:e2e": "start-server-and-test 'npm start' 'http-get://localhost:3000' 'npm run cy:run'",
+    "test:e2e:dev": "start-server-and-test 'npm start' 'http-get://localhost:3000' 'npm run cy:open'",
+    "cy:verify": "cypress verify",
+    "cy:cache:clear": "cypress cache clear"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "**/*.cy.{js,jsx,ts,tsx}"
+        ],
+        "extends": [
+          "plugin:cypress/recommended"
+        ]
+      }
     ]
   },
   "browserslist": {
@@ -51,9 +67,15 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/cypress": "^10.0.3",
+    "@types/cypress": "^1.1.6",
     "@types/prop-types": "^15.7.14",
     "@types/uuid": "^10.0.0",
     "cypress": "^14.5.1",
-    "prop-types": "^15.8.1"
+    "cypress-real-events": "^1.14.0",
+    "cypress-wait-until": "^3.0.2",
+    "eslint-plugin-cypress": "^2.13.2",
+    "prop-types": "^15.8.1",
+    "start-server-and-test": "^2.0.12"
   }
 }

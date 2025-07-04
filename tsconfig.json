@@ -18,9 +18,20 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    // Добавленные настройки для Cypress
+    "types": ["cypress", "node", "@testing-library/cypress"],
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [
-    "src"
+    "src",
+    "cypress/**/*.ts",
+    "cypress/**/*.js"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

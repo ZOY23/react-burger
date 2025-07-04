@@ -1,18 +1,16 @@
 [
   {
-    "_id": "1",
-    "name": "Test Bun",
+    "_id": "60d3b41abdacab0026a733c6",
+    "name": "Краторная булка N-200i",
     "type": "bun",
-    "price": 100,
-    "image": "image.jpg",
-    "__v": 0
+    "price": 1255,
+    "image": "https://code.s3.yandex.net/react/code/bun-02.png"
   },
   {
-    "_id": "2",
-    "name": "Test Ingredient",
+    "_id": "60d3b41abdacab0026a733c7",
+    "name": "Биокотлета из марсианской Магнолии",
     "type": "main",
-    "price": 50,
-    "image": "image.jpg",
-    "__v": 0
+    "price": 424,
+    "image": "https://code.s3.yandex.net/react/code/meat-01.png"
   }
 ]

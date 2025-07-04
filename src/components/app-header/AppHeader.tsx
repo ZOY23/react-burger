@@ -7,7 +7,7 @@ export const AppHeader = () => {
   const isProfileActive = location.pathname.startsWith('/profile');
 
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-testid="app-header"> {/* Добавлено здесь */}
       <div className={styles.container}>
         <div className={styles.leftSection}>
           <NavLink 
@@ -16,6 +16,7 @@ export const AppHeader = () => {
               `${styles.navItem} ${isActive ? styles.active : ''}`
             }
             end
+            data-testid="constructor-link" // Дополнительный тестовый атрибут
           >
             <BurgerIcon type={location.pathname === '/' ? 'primary' : 'secondary'} />
             <p className="text text_type_main-default ml-2">Конструктор</p>
@@ -25,6 +26,7 @@ export const AppHeader = () => {
             className={({ isActive }) => 
               `${styles.navItem} ${isActive ? styles.active : ''}`
             }
+            data-testid="feed-link" // Дополнительный тестовый атрибут
           >
             <ListIcon type={location.pathname === '/feed' ? 'primary' : 'secondary'} />
             <p className="text text_type_main-default ml-2">Лента заказов</p>
@@ -32,7 +34,7 @@ export const AppHeader = () => {
         </div>
 
         <div className={styles.logo}>
-          <NavLink to="/">
+          <NavLink to="/" data-testid="logo-link"> {/* Дополнительный тестовый атрибут */}
             <Logo />
           </NavLink>
         </div>
@@ -42,6 +44,7 @@ export const AppHeader = () => {
           className={({ isActive }) => 
             `${styles.navItem} ${isActive ? styles.active : ''}`
           }
+          data-testid="profile-link" // Дополнительный тестовый атрибут
         >
           <ProfileIcon type={isProfileActive ? 'primary' : 'secondary'} />
           <p className="text text_type_main-default ml-2">Личный кабинет</p>
