@@ -1,11 +1,7 @@
-// authSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
-  registerUser,
-  loginUser,
   logoutUser,
-  checkUserAuth,
-  updateUser
+  checkUserAuth
 } from '../actions/authActions';
 import { setCookie, deleteCookie } from '../../utils/cookie';
 

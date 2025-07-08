@@ -5,7 +5,7 @@ import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { Provider } from 'react-redux'
 import { store } from './services/store/store'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
@@ -22,11 +22,11 @@ window.addEventListener('error', (event) => {
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <BrowserRouter basename="/">
+      <HashRouter basename="/">
         <DndProvider backend={HTML5Backend}>
           <App />
         </DndProvider>
-      </BrowserRouter>
+      </HashRouter>
     </Provider>
   </React.StrictMode>
 )

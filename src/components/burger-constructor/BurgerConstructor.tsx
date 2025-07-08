@@ -1,5 +1,5 @@
 import React, { FC, RefObject } from 'react';
-import { useDrag, useDrop, ConnectDropTarget } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { 
   ConstructorElement, 
   Button, 

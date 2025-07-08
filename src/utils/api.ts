@@ -16,10 +16,6 @@ interface TokenResponse {
   refreshToken: string;
 }
 
-interface RefreshTokenRequest {
-  token: string;
-}
-
 interface UserRegistrationRequest {
   email: string;
   password: string;
@@ -37,17 +33,9 @@ interface UserUpdateRequest {
   password?: string;
 }
 
-interface OrderRequest {
-  ingredients: string[];
-}
-
 interface ResetPasswordRequest {
   password: string;
   token: string;
-}
-
-interface ForgotPasswordRequest {
-  email: string;
 }
 
 let isRefreshing = false;
@@ -252,7 +240,6 @@ export const createOrderRequest = (
       body: JSON.stringify({ ingredients: ingredientIds }),
     })
       .then(response => {
-        // Эмулируем задержку в 15 секунд перед разрешением промиса
         setTimeout(() => {
           resolve(response);
         }, 15000);
@@ -281,7 +268,6 @@ export const resetPasswordRequest = (
   });
 };
 
-// Добавляем новый метод для получения заказов пользователя
 export const getUserOrdersRequest = (): Promise<ApiResponse<{orders: IOrder[]}>> => {
   return fetchWithRefresh('/orders', {
     method: 'GET',
