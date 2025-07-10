@@ -27,7 +27,7 @@
   },
   "include": [
     "src"
-  ],
+, "cypress.config.ts"  ],
   "exclude": [
     "node_modules"
   ]

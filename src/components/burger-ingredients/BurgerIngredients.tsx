@@ -194,7 +194,7 @@ const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient, count, onCl
       ref={ref}
       className={styles.card}
       onClick={() => onClick(ingredient)}
-      data-testid={`ingredient-${ingredient._id}`}
+            data-testid={`ingredient-${ingredient._id}`}
     >
       {count > 0 && <Counter count={count} size="default" />}
       <img src={ingredient.image} alt={ingredient.name} className={styles.image} />
