@@ -9,19 +9,8 @@ import ordersReducer, {
 } from './orderSlice';
 import { IOrder } from '../../utils/types';
 
-// Создаем копию initialState вручную, так как он не экспортируется из slice
-const initialState = {
-  feed: [] as IOrder[],
-  userOrders: [] as IOrder[],
-  loading: false,
-  error: null as string | null,
-  total: 0,
-  totalToday: 0,
-  currentOrder: null as IOrder | null,
-  currentOrderNumber: null as number | null,
-  wsConnected: false,
-  wsError: null as string | null,
-};
+// Используем initialState из самого редьюсера
+const initialState = ordersReducer(undefined, { type: 'unknown' });
 
 const testOrder: IOrder = {
   _id: '1',
