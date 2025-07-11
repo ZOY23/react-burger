@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { IIngredient, IOrderResponse } from '../../utils/types';
+import { IIngredient } from '../../utils/types';
 import { createOrderRequest } from '../../utils/api';
 import { v4 as uuidv4 } from 'uuid';
 

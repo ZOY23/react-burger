@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { IOrder, IOrdersResponse } from '../../utils/types';
+import { IOrder } from '../../utils/types';
 import { fetchWithRefresh, request } from '../../utils/api';
 import { RootState } from '../store/store';
 

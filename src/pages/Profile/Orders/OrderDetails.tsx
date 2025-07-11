@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../services/store/hooks';
 import { selectOrderByNumber } from '../../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../../services/selectors/ingredientsSelectors';
@@ -11,8 +11,6 @@ import Loader from '../../../components/loader/loader';
 
 export const OrderDetails: React.FC = () => {
   const { number } = useParams<{ number: string }>();
-  const navigate = useNavigate();
-  const location = useLocation();
   const orderNumber = number ? parseInt(number) : 0;
   const order = useAppSelector(state => selectOrderByNumber(state, orderNumber));
   const ingredients = useAppSelector(selectIngredients);

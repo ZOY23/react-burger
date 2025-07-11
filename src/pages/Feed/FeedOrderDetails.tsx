@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../services/store/hooks';
 import { selectOrderByNumber, selectCurrentOrder } from '../../services/selectors/ordersSelectors';
 import { selectIngredients } from '../../services/selectors/ingredientsSelectors';
-import { ProfileOrderDetails } from '../../components/order-info/ProfileOrderDetails'; // Изменен импорт
-import { IIngredient, IOrder, IOrderWithIngredients } from '../../utils/types';
+import { ProfileOrderDetails } from '../../components/order-info/ProfileOrderDetails';
+import { IIngredient, IOrderWithIngredients } from '../../utils/types';
 import { fetchOrderByNumber } from '../../services/slices/orderSlice';
 import Loader from '../../components/loader/loader';
 

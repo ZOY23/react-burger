@@ -17,7 +17,6 @@ import { OrdersHistory } from './pages/Profile/Orders/OrdersHistory';
 import { useAppDispatch, useAppSelector } from './services/store/hooks';
 import { IngredientDetails as IngredientDetailsComponent } from './components/ingredient-details/ingredient-details';
 import { forceLogout } from './services/slices/authSlice';
-import { IIngredient } from './utils/types';
 import { Feed } from './pages/Feed/Feed';
 import { FeedOrderDetails } from './pages/Feed/FeedOrderDetails';
 import { OrderDetails } from './pages/Profile/Orders/OrderDetails';
@@ -54,7 +53,7 @@ const App: React.FC = () => {
 
   const handleModalClose = () => {
     dispatch(clearCurrentOrder());
-    navigate(-1); // Изменено: возврат на предыдущий маршрут вместо жесткого перехода
+    navigate(-1);
   };
 
   return (

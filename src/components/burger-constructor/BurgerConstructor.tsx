@@ -1,5 +1,5 @@
 import React, { FC, RefObject } from 'react';
-import { useDrag, useDrop, ConnectDropTarget } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { 
   ConstructorElement, 
   Button, 
@@ -103,6 +103,7 @@ const ConstructorIngredient: FC<ConstructorIngredientProps> = ({
         price={ingredient.price}
         thumbnail={ingredient.image}
         handleClose={onRemove}
+      data-testid={`constructor-filling-${ingredient._id}`}   
       />
     </div>
   );
@@ -181,20 +182,28 @@ export const BurgerConstructor: FC = () => {
       data-testid="burger-constructor"
     >
       {bun && (
-        <div className={`${styles.bun} ml-8`}>
+        <div className={`${styles.bun} ml-8`} data-testid="constructor-bun-top">
           <ConstructorElement
             type="top"
             isLocked={true}
             text={`${bun.name} (верх)`}
             price={bun.price}
             thumbnail={bun.image}
+            data-testid="constructor-bun-top-element"
           />
         </div>
       )}
       
-      <div className={`${styles.ingredients} custom-scroll`}>
+      <div 
+        className={`${styles.ingredients} custom-scroll`}
+        data-testid="constructor-ingredients"
+        style={{ minHeight: '100px' }}
+      >
         {ingredients.length === 0 && !bun && (
-          <div className={`${styles.emptyConstructor} text text_type_main-default`}>
+          <div 
+            className={`${styles.emptyConstructor} text text_type_main-default`}
+            data-testid="constructor-empty"
+          >
             Перетащите сюда ингредиенты
           </div>
         )}
@@ -211,18 +220,19 @@ export const BurgerConstructor: FC = () => {
       </div>
       
       {bun && (
-        <div className={`${styles.bun} ml-8`}>
+        <div className={`${styles.bun} ml-8`} data-testid="constructor-bun-bottom">
           <ConstructorElement
             type="bottom"
             isLocked={true}
             text={`${bun.name} (низ)`}
             price={bun.price}
             thumbnail={bun.image}
+            data-testid="constructor-bun-bottom-element"
           />
         </div>
       )}
       
-      <div className={`${styles.total} mt-10`}>
+      <div className={`${styles.total} mt-10`} data-testid="constructor-total">
         <div className={`${styles.price} mr-10`}>
           <span className="text text_type_digits-medium mr-2">{totalPrice}</span>
           <CurrencyIcon type="primary" />
@@ -240,17 +250,18 @@ export const BurgerConstructor: FC = () => {
       </div>
       
       {orderError && (
-        <p className={`text text_type_main-default ${styles.error}`}>
+        <p className={`text text_type_main-default ${styles.error}`} data-testid="order-error">
           Ошибка при создании заказа: {orderError}
         </p>
       )}
       
       {isOrderModalOpen && orderNumber && (
-        <Modal onClose={closeModal}>
+        <Modal onClose={closeModal} data-testid="order-modal">
           <OrderDetails 
             orderNumber={orderNumber} 
             isLoading={orderLoading}
             error={orderError}
+            data-testid="order-details"
           />
         </Modal>
       )}
